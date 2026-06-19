@@ -56,9 +56,11 @@
         <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.18em; margin-top:7px; color:#5d7088;">PLOT EVERY JOURNEY — PAST, PRESENT &amp; DREAMED</div>
       </div>
       <div style="display:flex; align-items:center; gap:12px;">
-        <button onClick="{{ openAdd }}" style="pointer-events:auto; display:flex; align-items:center; gap:9px; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13px; letter-spacing:0.04em; color:#04111e; background:linear-gradient(180deg,#5fd3ff,#22aee6); border:none; border-radius:10px; padding:11px 18px; cursor:pointer; box-shadow:0 0 0 1px rgba(120,220,255,0.4),0 8px 28px rgba(34,174,230,0.35);">
-          <span style="font-size:16px; line-height:1;">+</span> Add location
-        </button>
+        <sc-if value="{{ canEdit }}" hint-placeholder-val="{{ true }}">
+          <button onClick="{{ openAdd }}" style="pointer-events:auto; display:flex; align-items:center; gap:9px; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13px; letter-spacing:0.04em; color:#04111e; background:linear-gradient(180deg,#5fd3ff,#22aee6); border:none; border-radius:10px; padding:11px 18px; cursor:pointer; box-shadow:0 0 0 1px rgba(120,220,255,0.4),0 8px 28px rgba(34,174,230,0.35);">
+            <span style="font-size:16px; line-height:1;">+</span> Add location
+          </button>
+        </sc-if>
         <button onClick="{{ toggleSettings }}" title="Data &amp; storage settings" style="pointer-events:auto; width:38px; height:38px; display:flex; align-items:center; justify-content:center; background:rgba(8,14,24,0.5); border:1px solid rgba(56,189,248,0.18); border-radius:10px; color:#6f8298; cursor:pointer; font-size:17px; line-height:1;" style-hover="color:#9fd6f0; border-color:rgba(56,189,248,0.4);">⚙</button>
       </div>
     </div>
@@ -197,7 +199,9 @@
           </div>
           <div style="display:flex; gap:8px; margin-top:13px;">
             <button onClick="{{ exportSelected }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#04111e; background:linear-gradient(180deg,#5fd3ff,#22aee6); border:none; border-radius:9px; padding:9px; cursor:pointer; font-weight:600;">Export</button>
-            <button onClick="{{ importSelected }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#cfe6f5; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.3); border-radius:9px; padding:9px; cursor:pointer;">Import</button>
+            <sc-if value="{{ canAdmin }}" hint-placeholder-val="{{ true }}">
+              <button onClick="{{ importSelected }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#cfe6f5; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.3); border-radius:9px; padding:9px; cursor:pointer;">Import</button>
+            </sc-if>
           </div>
         </div>
         <input ref="{{ setImportInput }}" type="file" accept="application/json,.json" onChange="{{ importJson }}" style="display:none;">
@@ -207,8 +211,10 @@
         <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#4b5d74; line-height:1.6; margin-top:14px;">A linked file auto-saves on every change. Export/Import works anywhere.</div>
 
         <div style="margin-top:14px; padding-top:13px; border-top:1px solid rgba(255,255,255,0.08);">
-          <sc-if value="{{ notConfirmClear }}" hint-placeholder-val="{{ true }}">
-            <button onClick="{{ askClear }}" style="font-family:'Space Grotesk',sans-serif; font-size:11.5px; color:#e9a3a3; background:rgba(239,68,68,0.06); border:1px solid rgba(239,68,68,0.28); border-radius:8px; padding:6px 11px; cursor:pointer;">Clear data…</button>
+          <sc-if value="{{ canAdmin }}" hint-placeholder-val="{{ true }}">
+            <sc-if value="{{ notConfirmClear }}" hint-placeholder-val="{{ true }}">
+              <button onClick="{{ askClear }}" style="font-family:'Space Grotesk',sans-serif; font-size:11.5px; color:#e9a3a3; background:rgba(239,68,68,0.06); border:1px solid rgba(239,68,68,0.28); border-radius:8px; padding:6px 11px; cursor:pointer;">Clear data…</button>
+            </sc-if>
           </sc-if>
         </div>
         <sc-if value="{{ confirmClear }}" hint-placeholder-val="{{ false }}">
@@ -340,10 +346,12 @@
         <sc-if value="{{ selected.notes }}" hint-placeholder-val="{{ false }}">
           <div style="margin-top:14px; padding-top:13px; border-top:1px solid rgba(255,255,255,0.08); font-family:'Space Grotesk',sans-serif; font-size:13px; line-height:1.55; color:#c2cfde; white-space:pre-wrap;">{{ selected.notes }}</div>
         </sc-if>
-        <div style="display:flex; gap:9px; margin-top:16px;">
-          <button onClick="{{ editSelected }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13px; color:#04111e; background:linear-gradient(180deg,#fcd34d,#fbbf24); border:none; border-radius:10px; padding:10px; cursor:pointer; box-shadow:0 0 18px rgba(251,191,36,0.35);">Edit</button>
-          <button onClick="{{ deleteSelected }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-weight:500; font-size:13px; color:#f0a6a6; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); border-radius:10px; padding:10px 14px; cursor:pointer;">Delete</button>
-        </div>
+        <sc-if value="{{ canEdit }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex; gap:9px; margin-top:16px;">
+            <button onClick="{{ editSelected }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13px; color:#04111e; background:linear-gradient(180deg,#fcd34d,#fbbf24); border:none; border-radius:10px; padding:10px; cursor:pointer; box-shadow:0 0 18px rgba(251,191,36,0.35);">Edit</button>
+            <button onClick="{{ deleteSelected }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-weight:500; font-size:13px; color:#f0a6a6; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); border-radius:10px; padding:10px 14px; cursor:pointer;">Delete</button>
+          </div>
+        </sc-if>
       </div>
     </sc-if>
 
@@ -553,6 +561,10 @@
       </div>
 
       <div style="padding:16px 26px 24px; border-top:1px solid rgba(56,189,248,0.12);">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px;">
+          <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Add another after saving<span style="color:#6b7c93;"> · clears the date</span></span>
+          <button onClick="{{ toggleDup }}" style="{{ dupStyle }}">{{ dupLabel }}</button>
+        </div>
         <sc-if value="{{ formError }}" hint-placeholder-val="{{ false }}">
           <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#f0a6a6; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); border-radius:9px; padding:9px 11px; margin-bottom:12px;">{{ formError }}</div>
         </sc-if>
@@ -677,6 +689,7 @@ class Component extends DCLogic {
       cloudAuth: false,
       cloudState: 'ok',
       cloudUser: '',
+      cloudRoles: [],
       cloudMsg: '',
       dataFileName: '',
       fsSupported: false,
@@ -691,6 +704,7 @@ class Component extends DCLogic {
       helpHtml: '',
       helpError: '',
       geocoding: false,
+      dupMode: false,
       ready: false,
     };
 
@@ -941,7 +955,7 @@ class Component extends DCLogic {
       const r = await fetch('/.auth/me');
       const j = await r.json();
       const p = j && (j.clientPrincipal || (j[0] && j[0].clientPrincipal));
-      this.setState({ cloudAuth: !!p, cloudUser: (p && (p.userDetails || '')) || '' });
+      this.setState({ cloudAuth: !!p, cloudUser: (p && (p.userDetails || '')) || '', cloudRoles: (p && p.userRoles) || [] });
     } catch (e) {}
   }
 
@@ -1733,6 +1747,7 @@ class Component extends DCLogic {
   }
 
   toggleDetails() { this.setState(s => ({ detailsOpen: !s.detailsOpen })); }
+  toggleDup() { this.setState(s => ({ dupMode: !s.dupMode })); }
   toggleType(field, key) {
     this.setState(s => {
       const cur = s.form[field] || [];
@@ -1877,7 +1892,13 @@ class Component extends DCLogic {
       list = [...this.state.locations, { ...f, id: savedId, createdAt: new Date().toISOString() }];
     }
     this.persist(list);
-    this.setState({ locations: list, formOpen: false, editingId: null, formError: '', selectedId: savedId });
+    if (this.state.dupMode) {
+      const dup = { ...f, date: '', dateEnd: '' };
+      delete dup.id; delete dup.createdAt; delete dup.modifiedAt;
+      this.setState({ locations: list, formOpen: true, editingId: null, formError: '', selectedId: savedId, form: dup, calOpen: false });
+    } else {
+      this.setState({ locations: list, formOpen: false, editingId: null, formError: '', selectedId: savedId });
+    }
     const c = this.resolveCoords(list.find(l => l.id === savedId));
     if (c) this.flyTo(c);
   }
@@ -2131,6 +2152,8 @@ class Component extends DCLogic {
       setLocalSource: () => this.setDataSource('local'),
       setCloudSource: () => this.setDataSource('cloud'),
       isCloudSource: this.state.cfgDataSource === 'cloud',
+      canEdit: this.state.cfgDataSource !== 'cloud' || (this.state.cloudRoles || []).includes('editor'),
+      canAdmin: this.state.cfgDataSource !== 'cloud' || (this.state.cloudRoles || []).includes('admin'),
       cloudBlocked: this.state.cfgDataSource === 'cloud' && this.state.cloudState !== 'ok',
       cloudBlockTitle: this.state.cloudState === 'denied' ? 'No access' : 'Sign in required',
       cloudBlockMsg: this.state.cloudState === 'denied'
@@ -2192,6 +2215,10 @@ class Component extends DCLogic {
       formMode: editingId != null ? 'EDIT DESTINATION' : 'NEW DESTINATION',
       formTitle: editingId != null ? 'Edit location' : 'Add location',
       saveLabel: this.state.geocoding ? 'Locating…' : (editingId != null ? 'Save changes' : 'Add to globe'),
+      dupOn: this.state.dupMode,
+      dupStyle: cfgPill(this.state.dupMode),
+      dupLabel: this.state.dupMode ? 'ON' : 'OFF',
+      toggleDup: () => this.toggleDup(),
       showCreated: editingId != null && !!form.createdAt,
       createdText: form.createdAt ? (() => { try { return new Date(form.createdAt).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }); } catch (e) { return form.createdAt; } })() : '',
       showModified: editingId != null && !!form.modifiedAt,

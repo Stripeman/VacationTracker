@@ -21,6 +21,7 @@ A dark, futuristic travel tracker built around a geographically accurate, rotati
 - Click any saved location (on the globe or in the list) to view its detail card, then **Edit** or **Delete** it.
 - **Required fields:** every destination needs a **city**, a **date**, and a **status**. State is also required for U.S. cities.
 - **Audit stamps:** the Edit form shows a read-only **Added** timestamp (set when the destination is first created) and a **Last modified** timestamp (updated each time you save changes).
+- **Add another after saving:** a sticky toggle in the form — when on, saving keeps the form open with the same details but the **date cleared**, so you can quickly log repeat visits to the same place. Stays on until you turn it off.
 
 ### 🗓 Dates
 - Pick a **single day** or **drag across the calendar** to select a date range.
@@ -50,7 +51,8 @@ A dark, futuristic travel tracker built around a geographically accurate, rotati
 ### 💾 Storage & backup
 - **Data source switch** (⚙ → Settings → Data & Storage): choose **Local** or **Cloud**.
   - **Local** — data stays in this browser. On first run with no saved data it loads `trip-tracker.json`, and if that's empty it falls back to `demo-data.json`.
-  - **Cloud** — syncs to the Azure API; requires sign-in (reads need an account, saves need the `editor` role). Cloud data is private to signed-in users.
+  - **Cloud** — syncs to the Azure API; reads need the **`reader`** (or `editor`) role, saves need **`editor`**. Cloud data is private to authorized users.
+- **Role-aware UI:** in Cloud mode the **Add / Edit / Delete** controls are hidden unless your account has the `editor` role, and **Import / Clear data** require the `admin` role (read-only `reader` accounts see the data but no editing actions). Local mode always allows editing.
 - **Export / Import** with independent **Data** and **Settings** switches: back up or restore destinations, display settings, or both. Import only applies what you've switched on *and* what the file contains.
 - **Clear data** always downloads a dated backup first.
 

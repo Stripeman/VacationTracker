@@ -54,9 +54,9 @@ api/                      → the Functions API
    e. **Set your tenant** in `staticwebapp.config.json`: replace `<TENANT_ID>` in the `openIdIssuer` URL with your Directory (tenant) ID, then commit.
    The app's **Sign in** link points to `/.auth/login/aad`.
 
-5. **Grant access (roles).** Two custom roles control access: **`reader`** (view) and **`editor`** (view + edit).
-   - Azure Portal → your Static Web App → **Role management** → **Invite** → enter the user, assign **`reader`** and/or **`editor`** → send the invite link and have them accept.
-   - The API enforces it: `GET /api/trips` requires `reader` or `editor`; `POST/PUT` requires `editor`.
+5. **Grant access (roles).** Three custom roles: **`reader`** (view), **`editor`** (view + add/edit/delete), and **`admin`** (editor + import & clear data).
+   - Azure Portal → your Static Web App → **Role management** → **Invite** → enter the user, assign `reader`, `editor`, and/or `admin` → send the invite link and have them accept.
+   - The API enforces read/write: `GET /api/trips` requires `reader` or `editor`; `POST/PUT` requires `editor`. The **Import** and **Clear data** controls are additionally hidden in the UI unless the account has `admin`.
 
 ## How data flows once deployed
 
