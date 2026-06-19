@@ -1876,7 +1876,7 @@ class Component extends DCLogic {
   toggleFilters() { this.setState(s => ({ filtersOpen: !s.filtersOpen })); }
   toggleHeat() { this.setState(s => ({ heatOpen: !s.heatOpen })); }
   setHeatMode(m) { this.setState({ heatMode: m }); }
-  clearFilters() { this.setState({ filterStatuses: [], filterVisit: [], filterTrip: [], filterTravelers: [], filterText: '', filterCountries: [], filterCities: [] }); }
+  clearFilters() { this.setState({ filterYear: 'all', filterStatuses: [], filterVisit: [], filterTrip: [], filterTravelers: [], filterText: '', filterCountries: [], filterCities: [] }); }
   toggleCountry(c) { this.setState(s => { const cur = s.filterCountries; return { filterCountries: cur.includes(c) ? cur.filter(x => x !== c) : [...cur, c] }; }); }
   toggleCity(c) { this.setState(s => { const cur = s.filterCities; return { filterCities: cur.includes(c) ? cur.filter(x => x !== c) : [...cur, c] }; }); }
 
