@@ -153,6 +153,24 @@
           <button onClick="{{ setLocalSource }}" style="{{ dsLocalStyle }}">Local</button>
           <button onClick="{{ setCloudSource }}" style="{{ dsCloudStyle }}">Cloud</button>
         </div>
+        <sc-if value="{{ confirmLocal }}" hint-placeholder-val="{{ false }}">
+          <div style="background:rgba(251,191,36,0.08); border:1px solid rgba(251,191,36,0.3); border-radius:10px; padding:12px; margin-bottom:10px;">
+            <div style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#f3e2c0; line-height:1.5; margin-bottom:11px;">Local uses a <b>separate dataset stored only in this browser</b> — your Cloud trips won't show here. Your cloud data is <b>not deleted</b>; switch back to Cloud anytime to see it again.</div>
+            <div style="display:flex; gap:8px;">
+              <button onClick="{{ cancelLocalSwitch }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#9fb0c6; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12); border-radius:9px; padding:9px; cursor:pointer;">Stay on Cloud</button>
+              <button onClick="{{ doLocalSwitch }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; color:#04111e; background:#fbbf24; border:1px solid #fcd34d; border-radius:9px; padding:9px; cursor:pointer;">Switch to Local</button>
+            </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ hasCloudSeed }}" hint-placeholder-val="{{ false }}">
+          <div style="background:rgba(56,189,248,0.07); border:1px solid rgba(56,189,248,0.3); border-radius:10px; padding:12px; margin-bottom:10px;">
+            <div style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#cfe6f5; line-height:1.5; margin-bottom:11px;">The cloud has <b>no trips yet</b>, but this device has <b>{{ cloudSeedCount }}</b>. Upload them to the cloud, or keep the cloud empty? Nothing is sent until you choose.</div>
+            <div style="display:flex; gap:8px;">
+              <button onClick="{{ discardLocalForCloud }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#9fb0c6; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12); border-radius:9px; padding:9px; cursor:pointer;">Keep cloud empty</button>
+              <button onClick="{{ uploadLocalToCloud }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; color:#04111e; background:linear-gradient(180deg,#5fd3ff,#22aee6); border:none; border-radius:9px; padding:9px; cursor:pointer;">Upload to cloud</button>
+            </div>
+          </div>
+        </sc-if>
         <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#586a82; line-height:1.5; margin-bottom:14px;">Local stays on this device. Cloud syncs to Azure and requires sign-in.</div>
         <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#566a82; margin-bottom:4px;">CURRENTLY SAVING TO</div>
         <div title="{{ storageTitle }}" style="display:flex; align-items:center; gap:8px; margin-bottom:14px; cursor:default;">
@@ -726,6 +744,8 @@ class Component extends DCLogic {
       heatOpen: false,
       settingsOpen: false,
       dataMode: 'browser',
+      confirmLocal: false,
+      cloudSeed: 0,
       cloudAvailable: false,
       cloudAuth: false,
       cloudState: 'ok',
@@ -950,12 +970,21 @@ class Component extends DCLogic {
   setDataSource(src) {
     const cfg = { ...this.cfgObject(this.state), dataSource: src };
     try { localStorage.setItem(this.CFG, JSON.stringify(cfg)); } catch (e) {}
-    this.setState({ cfgDataSource: src, dataMode: src === 'cloud' ? 'cloud' : 'browser', cloudMsg: '' }, () => {
+    this.setState({ cfgDataSource: src, dataMode: src === 'cloud' ? 'cloud' : 'browser', cloudMsg: '', confirmLocal: false }, () => {
       if (src === 'cloud') this.cloudLoad();
     });
   }
 
+  // Guard: switching Cloud → Local shows a separate browser-only dataset.
+  // Confirm first so nobody mistakes it for data loss.
+  requestLocalSource() {
+    if (this.state.cfgDataSource === 'cloud') this.setState({ confirmLocal: true });
+    else this.setDataSource('local');
+  }
+  cancelLocalSwitch() { this.setState({ confirmLocal: false }); }
+
   async cloudLoad() {
+    this._cloudSynced = false; // block cloud writes until we've confirmed cloud's state
     try {
       const res = await fetch('/api/trips', { cache: 'no-store' });
       if (res.status === 401) {
@@ -972,23 +1001,46 @@ class Component extends DCLogic {
       if (res.status !== 200 && res.status !== 204) return false; // no API → local
       this._cloud = true;
       let ns = { dataMode: 'cloud', cloudAvailable: true, cloudState: 'ok' };
+      let cloudLocs = [];
       if (res.status === 200) {
         const data = await res.json();
-        const locs = Array.isArray(data) ? data : (data.locations || []);
+        cloudLocs = Array.isArray(data) ? data : (data.locations || []);
         const settings = data && data.settings;
-        if (locs.length) {
-          this.persistLocal(locs);
-          ns.locations = locs;
-          if (settings) {
-            const cfg = this.applySettings(settings);
-            ns.cfgDetailsFormDefault = cfg.detailsFormDefault; ns.cfgDetailsCard = cfg.detailsCard; ns.cfgStatusCard = cfg.statusCard; ns.cfgSpin = cfg.spin; ns.detailsOpen = cfg.detailsFormDefault;
-          }
+        if (cloudLocs.length && settings) {
+          const cfg = this.applySettings(settings);
+          ns.cfgDetailsFormDefault = cfg.detailsFormDefault; ns.cfgDetailsCard = cfg.detailsCard; ns.cfgStatusCard = cfg.statusCard; ns.cfgSpin = cfg.spin; ns.detailsOpen = cfg.detailsFormDefault;
         }
+      }
+      // Cloud is now the source of truth.
+      this._cloudCount = cloudLocs.length;
+      this._cloudSynced = true;
+      if (cloudLocs.length) {
+        this.persistLocal(cloudLocs);
+        ns.locations = cloudLocs;
+        ns.cloudSeed = 0;
+      } else if ((this.state.locations || []).length) {
+        // Cloud reachable but empty, and this device has trips. Do NOT auto-upload
+        // (that's how data gets clobbered) — ask the user what to do.
+        ns.cloudSeed = this.state.locations.length;
+      } else {
+        ns.cloudSeed = 0;
       }
       this.setState(ns);
       this.checkAuth();
       return true;
     } catch (e) { return false; }
+  }
+
+  uploadLocalToCloud() {
+    const list = this.state.locations || [];
+    this._cloudCount = list.length;
+    this.cloudSave(list);
+    this.setState({ cloudSeed: 0, cloudMsg: 'Uploaded ' + list.length + ' trips to the cloud.' });
+  }
+  discardLocalForCloud() {
+    this.persistLocal([]);
+    this._cloudCount = 0;
+    this.setState({ locations: [], selectedId: null, cloudSeed: 0 });
   }
 
   async checkAuth() {
@@ -1006,7 +1058,7 @@ class Component extends DCLogic {
       const res = await fetch('/api/trips', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body });
       if (res.status === 401) this.setState({ cloudMsg: 'Sign in to save changes to the cloud.' });
       else if (!res.ok) this.setState({ cloudMsg: 'Cloud save failed (' + res.status + ').' });
-      else this.setState({ cloudMsg: '' });
+      else { this._cloudCount = list.length; this.setState({ cloudMsg: '' }); }
     } catch (e) { this.setState({ cloudMsg: 'Cloud offline — changes saved on this device.' }); }
   }
 
@@ -1482,7 +1534,7 @@ class Component extends DCLogic {
   persist(list) {
     this.persistLocal(list);
     if (this._fileHandle && this.state.dataMode === 'file' && !this.state.needsReconnect) this.writeFile(list);
-    if (this.state.dataMode === 'cloud' && this._cloud) this.cloudSave(list);
+    if (this.state.dataMode === 'cloud' && this._cloud && this._cloudSynced) this.cloudSave(list);
   }
 
   _idb() {
@@ -2205,8 +2257,15 @@ class Component extends DCLogic {
       reloadCloud: () => this.cloudLoad(),
       dsLocalStyle: segStyle(this.state.cfgDataSource === 'local', '#5fd3ff'),
       dsCloudStyle: segStyle(this.state.cfgDataSource === 'cloud', '#5fd3ff'),
-      setLocalSource: () => this.setDataSource('local'),
+      setLocalSource: () => this.requestLocalSource(),
       setCloudSource: () => this.setDataSource('cloud'),
+      confirmLocal: this.state.confirmLocal,
+      cancelLocalSwitch: () => this.cancelLocalSwitch(),
+      doLocalSwitch: () => this.setDataSource('local'),
+      hasCloudSeed: (this.state.cloudSeed || 0) > 0,
+      cloudSeedCount: this.state.cloudSeed || 0,
+      uploadLocalToCloud: () => this.uploadLocalToCloud(),
+      discardLocalForCloud: () => this.discardLocalForCloud(),
       isCloudSource: this.state.cfgDataSource === 'cloud',
       canEdit: this.state.cfgDataSource !== 'cloud' || (this.state.cloudRoles || []).includes('editor'),
       canAdmin: this.state.cfgDataSource !== 'cloud' || (this.state.cloudRoles || []).includes('admin'),

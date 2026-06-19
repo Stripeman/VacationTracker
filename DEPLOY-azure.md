@@ -64,6 +64,34 @@ api/                      → the Functions API
 - **Roles:** `reader` can view; `editor` can view and save. A signed-in account with neither role gets the “contact the author for access” message.
 - An editor's change `POST`s the full dataset to the blob (creating it on first save). The bundled `demo-data.json` / `trip-tracker.json` are only used in **Local** mode — they never expose cloud data.
 
+## Protecting the data (blob versioning + soft delete)
+
+The app writes the **whole dataset** on every save, so a bad client state could in theory overwrite good data. The app guards against this (it never pushes to the cloud before it has read the cloud, and asks before seeding an empty cloud), but you should **also** enable storage-side safety nets so any overwrite is recoverable:
+
+1. **Enable blob versioning + soft delete** (one-time, on the storage account):
+   ```
+   az storage account blob-service-properties update \
+     -n triptrackerdata -g trip-tracker \
+     --enable-versioning true \
+     --enable-delete-retention true --delete-retention-days 30 \
+     --enable-container-delete-retention true --container-delete-retention-days 30
+   ```
+   Or in the Portal: **Storage account → Data protection** → tick **Enable versioning for blobs**, **Enable soft delete for blobs** (e.g. 30 days), and **Enable soft delete for containers**.
+
+2. **What this buys you:** every save keeps the previous blob as an immutable **version**. If `trip-tracker.json` ever gets clobbered, you can roll back instead of losing data. Cost is negligible at this size (a few KB per version).
+
+3. **Restore a previous version:**
+   - Portal → **Storage account → Containers → `data` → `trip-tracker.json` → Versions** tab. Pick a timestamp from *before* the bad save → **…** → **Restore** (promotes it to current). Or **Download** that version, then in the app (signed in as `editor`/`admin`) use **⚙ → Import → Data** to push it back to the cloud.
+   - CLI:
+     ```
+     az storage blob list --account-name triptrackerdata -c data --prefix trip-tracker.json --include v -o table
+     az storage blob copy start --account-name triptrackerdata \
+       --destination-container data --destination-blob trip-tracker.json \
+       --source-uri "https://triptrackerdata.blob.core.windows.net/data/trip-tracker.json?versionId=<VERSION_ID>"
+     ```
+
+4. **Belt and braces:** the app still auto-downloads a dated JSON **backup** before any *Clear data*, and **⚙ → Export** gives you a manual snapshot anytime.
+
 ## Local development
 
 Run with the [SWA CLI](https://aka.ms/swa-cli) to emulate the API + auth locally:
