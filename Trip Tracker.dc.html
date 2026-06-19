@@ -138,30 +138,38 @@
           </div>
         </div>
         <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088; padding-top:14px; border-top:1px solid rgba(255,255,255,0.08); margin-bottom:12px;">DATA &amp; STORAGE</div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:#586a82; margin-bottom:6px;">DATA SOURCE</div>
+        <div style="display:flex; gap:6px; margin-bottom:6px;">
+          <button onClick="{{ setLocalSource }}" style="{{ dsLocalStyle }}">Local</button>
+          <button onClick="{{ setCloudSource }}" style="{{ dsCloudStyle }}">Cloud</button>
+        </div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#586a82; line-height:1.5; margin-bottom:14px;">Local stays on this device. Cloud syncs to Azure and requires sign-in.</div>
         <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#566a82; margin-bottom:4px;">CURRENTLY SAVING TO</div>
         <div title="{{ storageTitle }}" style="display:flex; align-items:center; gap:8px; margin-bottom:14px; cursor:default;">
           <span style="width:8px; height:8px; border-radius:50%; background:#34d399; box-shadow:0 0 8px #34d39999;"></span>
           <span style="font-family:'Space Grotesk',sans-serif; font-size:13.5px; color:#e6edf6; word-break:break-all;">{{ storageLabel }}</span>
         </div>
-        <div style="margin-bottom:14px; background:rgba(56,189,248,0.06); border:1px solid rgba(56,189,248,0.2); border-radius:10px; padding:11px 12px;">
-          <div style="display:flex; align-items:center; gap:8px; margin-bottom:9px;">
-            <span style="width:8px; height:8px; border-radius:50%; background:{{ cloudDotColor }}; box-shadow:0 0 8px {{ cloudDotColor }};"></span>
-            <span style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.16em; color:#7c8ea6;">CLOUD SYNC</span>
-          </div>
-          <sc-if value="{{ cloudAvailable }}" hint-placeholder-val="{{ false }}">
-            <div style="display:flex; align-items:center; gap:8px;">
-              <span style="flex:1; font-family:'IBM Plex Mono',monospace; font-size:11px; color:{{ cloudAuthColor }};">{{ cloudAuthLabel }}</span>
-              <a href="{{ cloudAuthHref }}" style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#04111e; background:#5fd3ff; border-radius:6px; padding:4px 9px; text-decoration:none; font-weight:600;">{{ cloudAuthAction }}</a>
+        <sc-if value="{{ isCloudSource }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-bottom:14px; background:rgba(56,189,248,0.06); border:1px solid rgba(56,189,248,0.2); border-radius:10px; padding:11px 12px;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:9px;">
+              <span style="width:8px; height:8px; border-radius:50%; background:{{ cloudDotColor }}; box-shadow:0 0 8px {{ cloudDotColor }};"></span>
+              <span style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.16em; color:#7c8ea6;">CLOUD SYNC</span>
             </div>
-            <button onClick="{{ reloadCloud }}" style="width:100%; margin-top:9px; font-family:'Space Grotesk',sans-serif; font-size:12px; color:#cfe6f5; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:7px; cursor:pointer;">Reload from cloud</button>
-            <sc-if value="{{ cloudMsg }}" hint-placeholder-val="{{ false }}">
-              <div style="margin-top:9px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#fcd34d; line-height:1.5;">{{ cloudMsg }}</div>
+            <sc-if value="{{ cloudAvailable }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="flex:1; font-family:'IBM Plex Mono',monospace; font-size:11px; color:{{ cloudAuthColor }};">{{ cloudAuthLabel }}</span>
+                <a href="{{ cloudAuthHref }}" style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#04111e; background:#5fd3ff; border-radius:6px; padding:4px 9px; text-decoration:none; font-weight:600;">{{ cloudAuthAction }}</a>
+              </div>
+              <button onClick="{{ reloadCloud }}" style="width:100%; margin-top:9px; font-family:'Space Grotesk',sans-serif; font-size:12px; color:#cfe6f5; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:7px; cursor:pointer;">Reload from cloud</button>
+              <sc-if value="{{ cloudMsg }}" hint-placeholder-val="{{ false }}">
+                <div style="margin-top:9px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#fcd34d; line-height:1.5;">{{ cloudMsg }}</div>
+              </sc-if>
             </sc-if>
-          </sc-if>
-          <sc-if value="{{ cloudNotAvailable }}" hint-placeholder-val="{{ true }}">
-            <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#7d90a8; line-height:1.55;">Not connected — running locally. Deploy to Azure (see DEPLOY-azure.md) to sync edits through the site.</div>
-          </sc-if>
-        </div>
+            <sc-if value="{{ cloudNotAvailable }}" hint-placeholder-val="{{ true }}">
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#7d90a8; line-height:1.55;">Not connected — deploy to Azure (see DEPLOY-azure.md) to sync edits through the site.</div>
+            </sc-if>
+          </div>
+        </sc-if>
         <sc-if value="{{ needsReconnect }}" hint-placeholder-val="{{ false }}">
           <button onClick="{{ reconnectFile }}" style="width:100%; font-family:'Space Grotesk',sans-serif; font-size:13px; font-weight:600; color:#04111e; background:linear-gradient(180deg,#fcd34d,#fbbf24); border:none; border-radius:9px; padding:10px; cursor:pointer; margin-bottom:10px;">Reconnect file</button>
         </sc-if>
@@ -400,6 +408,21 @@
       </div>
     </sc-if>
 
+    <!-- cloud access message (cloud mode, not authorized) -->
+    <sc-if value="{{ cloudBlocked }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute; inset:0; z-index:28; pointer-events:auto; display:flex; align-items:center; justify-content:center; padding:40px; background:rgba(3,6,12,0.55); backdrop-filter:blur(2px); -webkit-backdrop-filter:blur(2px); animation:vl-fade 0.2s ease;">
+        <div style="width:min(420px,92vw); background:rgba(9,15,26,0.97); border:1px solid rgba(56,189,248,0.22); border-radius:16px; box-shadow:0 24px 70px rgba(0,0,0,0.6); padding:28px; text-align:center;">
+          <div style="width:46px; height:46px; margin:0 auto 16px; display:flex; align-items:center; justify-content:center; border-radius:12px; background:rgba(251,191,36,0.12); border:1px solid rgba(251,191,36,0.35); color:#fcd34d; font-size:22px;">🔒</div>
+          <div style="font-family:'Orbitron',sans-serif; font-size:16px; letter-spacing:0.1em; color:#eaf4fd;">{{ cloudBlockTitle }}</div>
+          <div style="font-family:'Space Grotesk',sans-serif; font-size:13.5px; line-height:1.6; color:#9fb0c6; margin-top:12px;">{{ cloudBlockMsg }}</div>
+          <a href="{{ cloudBlockHref }}" style="display:inline-block; margin-top:20px; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; color:#04111e; background:linear-gradient(180deg,#5fd3ff,#22aee6); border-radius:11px; padding:11px 22px; text-decoration:none;">{{ cloudBlockAction }}</a>
+          <div style="margin-top:14px;">
+            <button onClick="{{ cloudUseLocal }}" style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#8093aa; background:none; border:none; cursor:pointer; text-decoration:underline;">Use local demo instead</button>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
     <!-- help / guide modal -->
     <sc-if value="{{ helpOpen }}" hint-placeholder-val="{{ false }}">
       <div onClick="{{ closeHelp }}" style="position:absolute; inset:0; z-index:30; pointer-events:auto; display:flex; align-items:center; justify-content:center; padding:40px; background:rgba(2,5,10,0.62); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); animation:vl-fade 0.2s ease;">
@@ -547,7 +570,7 @@
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    this.STORE = 'vacation-location:locations:v3';
+    this.STORE = 'vacation-location:locations:v4';
     this.CFG = 'vacation-location:config';
     this.VISIT_TYPES = [
       { key:'natlpark', label:'National park', color:'#4ade80' },
@@ -604,39 +627,11 @@ class Component extends DCLogic {
 
     let saved = null;
     try { saved = JSON.parse(localStorage.getItem(this.STORE) || 'null'); } catch (e) {}
-    this._hadSaved = !!(saved && Array.isArray(saved) && saved.length);
-    if (!saved || !Array.isArray(saved) || !saved.length) saved = this.seed();
-
-    // One-time migration: give every yearless destination a target year so it
-    // appears under the year filter and on the globe.
-    try {
-      if (!localStorage.getItem('vacation-location:yearfill')) {
-        let changed = false;
-        saved.forEach((l, i) => {
-          if (!l.date) {
-            const yr = 2027 + (i % 2);
-            const mo = String((i % 12) + 1).padStart(2, '0');
-            const dy = String(((i * 7) % 27) + 1).padStart(2, '0');
-            l.date = `${yr}-${mo}-${dy}`;
-            changed = true;
-          }
-        });
-        localStorage.setItem('vacation-location:yearfill', '1');
-        if (changed) { try { localStorage.setItem(this.STORE, JSON.stringify(saved)); } catch (e) {} }
-      }
-    } catch (e) {}
-
-    // One-time additive seed: 145 diverse visits across new countries.
-    try {
-      if (!localStorage.getItem('trip-tracker:diversity145')) {
-        saved = saved.concat(this.diversitySeed());
-        localStorage.setItem('trip-tracker:diversity145', '1');
-        try { localStorage.setItem(this.STORE, JSON.stringify(saved)); } catch (e) {}
-      }
-    } catch (e) {}
+    if (!saved || !Array.isArray(saved)) saved = [];
 
     let cfg = {};
     try { cfg = JSON.parse(localStorage.getItem(this.CFG) || '{}') || {}; } catch (e) {}
+    const cfgDataSource = cfg.dataSource === 'cloud' ? 'cloud' : 'local';
     const cfgDetailsFormDefault = cfg.detailsFormDefault !== false;
     const cfgDetailsCard = cfg.detailsCard !== false;
     const cfgStatusCard = cfg.statusCard !== false;
@@ -653,6 +648,7 @@ class Component extends DCLogic {
       cfgDetailsCard,
       cfgStatusCard,
       cfgSpin,
+      cfgDataSource,
       selectedId: null,
       formOpen: false,
       editingId: null,
@@ -679,6 +675,8 @@ class Component extends DCLogic {
       dataMode: 'browser',
       cloudAvailable: false,
       cloudAuth: false,
+      cloudState: 'ok',
+      cloudUser: '',
       cloudMsg: '',
       dataFileName: '',
       fsSupported: false,
@@ -865,23 +863,60 @@ class Component extends DCLogic {
   }
 
   async bootData() {
-    // Cloud first (Azure API), then linked local file, then bundled demo file.
-    const usedCloud = await this.cloudLoad();
-    if (!usedCloud) { this.loadData(); this.loadBundledData(); }
+    if (this.state.cfgDataSource === 'cloud') {
+      const ok = await this.cloudLoad();
+      if (!ok) await this.loadLocal();
+    } else {
+      await this.loadLocal();
+    }
+  }
+
+  async loadLocal() {
+    // local mode: localStorage → trip-tracker.json → demo-data.json
+    if (this.state.locations.length) return;
+    for (const f of ['trip-tracker.json', 'demo-data.json']) {
+      try {
+        const res = await fetch(f, { cache: 'no-store' });
+        if (!res.ok) continue;
+        const data = await res.json();
+        const locs = Array.isArray(data) ? data : (data && Array.isArray(data.locations) ? data.locations : null);
+        if (locs && locs.length) {
+          this.persistLocal(locs);
+          const ns = { locations: locs };
+          const settings = (data && data.settings) || null;
+          if (settings) { const cfg = this.applySettings(settings); ns.cfgDetailsFormDefault = cfg.detailsFormDefault; ns.cfgDetailsCard = cfg.detailsCard; ns.cfgStatusCard = cfg.statusCard; ns.cfgSpin = cfg.spin; ns.detailsOpen = cfg.detailsFormDefault; }
+          this.setState(ns);
+          return;
+        }
+      } catch (e) {}
+    }
+  }
+
+  setDataSource(src) {
+    const cfg = { ...this.cfgObject(this.state), dataSource: src };
+    try { localStorage.setItem(this.CFG, JSON.stringify(cfg)); } catch (e) {}
+    this.setState({ cfgDataSource: src, dataMode: src === 'cloud' ? 'cloud' : 'browser', cloudMsg: '' }, () => {
+      if (src === 'cloud') this.cloudLoad();
+    });
   }
 
   async cloudLoad() {
     try {
       const res = await fetch('/api/trips', { cache: 'no-store' });
-      if (res.status === 401 || res.status === 403) {
-        // API exists but the viewer isn't signed in (or lacks access) → prompt sign-in.
+      if (res.status === 401) {
         this._cloud = true;
-        this.setState({ dataMode: 'cloud', cloudAvailable: true, cloudAuth: false, cloudMsg: 'Sign in to load your saved trips.' });
+        this.setState({ dataMode: 'cloud', cloudAvailable: true, cloudAuth: false, cloudState: 'anon', cloudMsg: '' });
+        return true;
+      }
+      if (res.status === 403) {
+        this._cloud = true;
+        this.setState({ dataMode: 'cloud', cloudAvailable: true, cloudAuth: true, cloudState: 'denied', cloudMsg: '' });
+        this.checkAuth();
         return true;
       }
       if (res.status !== 200 && res.status !== 204) return false; // no API → local
       this._cloud = true;
-      let ns = { dataMode: 'cloud', cloudAvailable: true };
+      let ns = { dataMode: 'cloud', cloudAvailable: true, cloudState: 'ok' };
       if (res.status === 200) {
         const data = await res.json();
         const locs = Array.isArray(data) ? data : (data.locations || []);
@@ -906,7 +941,7 @@ class Component extends DCLogic {
       const r = await fetch('/.auth/me');
       const j = await r.json();
       const p = j && (j.clientPrincipal || (j[0] && j[0].clientPrincipal));
-      this.setState({ cloudAuth: !!p });
+      this.setState({ cloudAuth: !!p, cloudUser: (p && (p.userDetails || '')) || '' });
     } catch (e) {}
   }
 
@@ -1486,7 +1521,7 @@ class Component extends DCLogic {
   }
 
   cfgObject(s) {
-    return { detailsFormDefault: s.cfgDetailsFormDefault, detailsCard: s.cfgDetailsCard, statusCard: s.cfgStatusCard, spin: s.cfgSpin, defaultYear: s.cfgDefaultYear, defaultTrip: s.cfgDefaultTrip, defaultStatus: s.cfgDefaultStatus };
+    return { detailsFormDefault: s.cfgDetailsFormDefault, detailsCard: s.cfgDetailsCard, statusCard: s.cfgStatusCard, spin: s.cfgSpin, defaultYear: s.cfgDefaultYear, defaultTrip: s.cfgDefaultTrip, defaultStatus: s.cfgDefaultStatus, dataSource: s.cfgDataSource };
   }
   setDefaultFilter(key, v) {
     this.setState(s => {
@@ -2091,6 +2126,19 @@ class Component extends DCLogic {
       cloudAuth: this.state.cloudAuth,
       cloudMsg: this.state.cloudMsg,
       reloadCloud: () => this.cloudLoad(),
+      dsLocalStyle: segStyle(this.state.cfgDataSource === 'local', '#5fd3ff'),
+      dsCloudStyle: segStyle(this.state.cfgDataSource === 'cloud', '#5fd3ff'),
+      setLocalSource: () => this.setDataSource('local'),
+      setCloudSource: () => this.setDataSource('cloud'),
+      isCloudSource: this.state.cfgDataSource === 'cloud',
+      cloudBlocked: this.state.cfgDataSource === 'cloud' && this.state.cloudState !== 'ok',
+      cloudBlockTitle: this.state.cloudState === 'denied' ? 'No access' : 'Sign in required',
+      cloudBlockMsg: this.state.cloudState === 'denied'
+        ? ((this.state.cloudUser ? 'Signed in as ' + this.state.cloudUser + ', but this' : 'This') + ' account has no rights to view or edit this data. Please contact the author to request reader (view) or editor (edit) access.')
+        : 'This data is private. Sign in with an authorized account to view it, or contact the author for access.',
+      cloudBlockAction: this.state.cloudState === 'denied' ? 'Sign out' : 'Sign in',
+      cloudBlockHref: this.state.cloudState === 'denied' ? '/.auth/logout' : '/.auth/login/aad',
+      cloudUseLocal: () => this.setDataSource('local'),
       cloudAuthLabel: this.state.cloudAuth ? 'Signed in — edits sync' : 'Sign in to view & edit your trips',
       cloudAuthColor: this.state.cloudAuth ? '#7ee0a8' : '#fcd34d',
       cloudAuthAction: this.state.cloudAuth ? 'Sign out' : 'Sign in',

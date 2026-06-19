@@ -54,15 +54,15 @@ api/                      → the Functions API
    e. **Set your tenant** in `staticwebapp.config.json`: replace `<TENANT_ID>` in the `openIdIssuer` URL with your Directory (tenant) ID, then commit.
    The app's **Sign in** link points to `/.auth/login/aad`.
 
-5. **Grant editing rights (roles).** `authenticated` lets anyone who signs in *read*; the `editor` role is required to *save*.
-   - Azure Portal → your Static Web App → **Role management** → **Invite** → enter the user, assign role **`editor`** → send the invite link and have them accept.
-   - To also restrict *reading* to specific people, change the GET route's `allowedRoles` from `authenticated` to `editor` (or a `viewer` role you invite).
+5. **Grant access (roles).** Two custom roles control access: **`reader`** (view) and **`editor`** (view + edit).
+   - Azure Portal → your Static Web App → **Role management** → **Invite** → enter the user, assign **`reader`** and/or **`editor`** → send the invite link and have them accept.
+   - The API enforces it: `GET /api/trips` requires `reader` or `editor`; `POST/PUT` requires `editor`.
 
 ## How data flows once deployed
 
-- The **entire site requires sign-in** (`/*` route is gated). A signed-out visitor is redirected straight to the Entra login and sees nothing — not the page, not the bundled `trip-tracker.json`.
-- **Sign in** with an Entra account to view. Saving requires the **`editor`** role; an editor's change `POST`s the full dataset, creating/updating the blob.
-- Non-editors who sign in can view; only `editor` accounts can save. To also restrict *viewing* to specific people, change the GET and `/*` routes' `allowedRoles` from `authenticated` to `editor`.
+- The **page always loads** (not gated). In **Cloud** mode, an unauthorized visitor sees a clean *No access / Sign in* message — never your data.
+- **Roles:** `reader` can view; `editor` can view and save. A signed-in account with neither role gets the “contact the author for access” message.
+- An editor's change `POST`s the full dataset to the blob (creating it on first save). The bundled `demo-data.json` / `trip-tracker.json` are only used in **Local** mode — they never expose cloud data.
 
 ## Local development
 

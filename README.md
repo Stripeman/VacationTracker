@@ -48,8 +48,9 @@ A dark, futuristic travel tracker built around a geographically accurate, rotati
 - **The two modes cross‑filter:** selecting countries narrows the *By city* list to cities within those countries, and selecting cities narrows the *By country* list to the countries that contain them. The globe shows the precise intersection of all active filters.
 
 ### 💾 Storage & backup
-- Data is saved in your browser automatically.
-- Optionally **link a JSON file** (Chromium browsers) so every change auto‑saves straight to disk — it reconnects to that file on your next visit.
+- **Data source switch** (⚙ → Settings → Data & Storage): choose **Local** or **Cloud**.
+  - **Local** — data stays in this browser. On first run with no saved data it loads `trip-tracker.json`, and if that's empty it falls back to `demo-data.json`.
+  - **Cloud** — syncs to the Azure API; requires sign-in (reads need an account, saves need the `editor` role). Cloud data is private to signed-in users.
 - **Export / Import** with independent **Data** and **Settings** switches: back up or restore destinations, display settings, or both. Import only applies what you've switched on *and* what the file contains.
 - **Clear data** always downloads a dated backup first.
 
