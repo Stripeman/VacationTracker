@@ -18,6 +18,8 @@ A dark, futuristic travel tracker built around a geographically accurate, rotati
 - Add a destination with: **city**, optional **state**, **country**, **latitude/longitude**, **date(s)**, **status**, **visit type(s)**, **trip type(s)**, and free‑form **notes**.
 - **Status**: Planned (blue) · Visited (green) · Dream destination (purple).
 - Click any saved location (on the globe or in the list) to view its detail card, then **Edit** or **Delete** it.
+- **Required fields:** every destination needs a **city**, a **date**, and a **status**. State is also required for U.S. cities.
+- **Audit stamps:** the Edit form shows a read-only **Added** timestamp (set when the destination is first created) and a **Last modified** timestamp (updated each time you save changes).
 
 ### 🗓 Dates
 - Pick a **single day** or **drag across the calendar** to select a date range.
@@ -36,7 +38,13 @@ A dark, futuristic travel tracker built around a geographically accurate, rotati
 - Per‑filter totals show the number of **trips** and **days**.
 - The year list only contains years that actually have destinations. Defaults to the **current year**.
 - Filters also **hide/show markers on the globe**.
-- **Heat map** — a grid‑icon button beside the search box opens a right‑side panel that ranks countries by travel intensity (trips and days) over the filtered set, colour‑coded from cool to hot. Toggle the button to hide it and see the globe, and again to bring it back.
+
+### 🔥 Heat map
+- The grid‑icon button beside the search box opens a right‑side **Travel Heat Map** panel; toggle it to hide the panel and see the globe, and again to bring it back.
+- Ranks places by travel intensity (trips and days) over the currently filtered set, coloured from **cool (fewer)** to **hot (more)**, with a legend.
+- **By country / By city** switch — view the heat ranking either way.
+- **Tap a tile to filter** the globe and list to that place (multi‑select supported). Selected tiles get an amber outline; the rest **dim** so your picks stand out, and a *Filtering: …* banner with **Clear** appears.
+- **The two modes cross‑filter:** selecting countries narrows the *By city* list to cities within those countries, and selecting cities narrows the *By country* list to the countries that contain them. The globe shows the precise intersection of all active filters.
 
 ### 💾 Storage & backup
 - Data is saved in your browser automatically.
@@ -47,6 +55,11 @@ A dark, futuristic travel tracker built around a geographically accurate, rotati
 ### ⚙ Display settings
 - Toggle whether the **Trip details** section is open by default on the form.
 - Toggle whether **trip details** and the **status** appear on the detail card.
+- **Spin the globe** — turn the idle auto‑rotation on or off (you can always drag to spin manually).
+
+### 🖱 Globe controls
+- **Drag** to rotate, **mouse‑wheel** to zoom from 1× to 6× (drag sensitivity scales with zoom).
+- **Hover** any landmass for a faint country label — it's suppressed/relocated so it never covers a placed dot.
 
 ---
 

@@ -320,7 +320,11 @@
             <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088;">TRAVEL HEAT MAP</div>
             <button onClick="{{ toggleHeat }}" style="width:26px; height:26px; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#8093aa; cursor:pointer; font-size:15px; line-height:1;">×</button>
           </div>
-          <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#5d7088; margin-top:8px;">{{ heatCountryCount }} countries · tap one to filter the globe</div>
+          <div style="display:flex; gap:6px; margin-top:11px;">
+            <button onClick="{{ setHeatCountry }}" style="{{ heatModeCountryStyle }}">By country</button>
+            <button onClick="{{ setHeatCity }}" style="{{ heatModeCityStyle }}">By city</button>
+          </div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#5d7088; margin-top:9px;">{{ heatCountLabel }}</div>
           <sc-if value="{{ hasActiveCountry }}" hint-placeholder-val="{{ false }}">
             <div style="display:flex; align-items:center; gap:8px; margin-top:10px; background:rgba(251,191,36,0.1); border:1px solid rgba(251,191,36,0.35); border-radius:9px; padding:7px 10px;">
               <span style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#fcd34d; line-height:1.3;">Filtering: {{ activeCountryLabel }}</span>
@@ -492,6 +496,10 @@
           <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93; margin:20px 0 7px;">ADDED <span style="color:#445;">·read-only</span></label>
           <div style="width:100%; font-family:'IBM Plex Mono',monospace; font-size:13px; color:#8093aa; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:11px 13px;">{{ createdText }}</div>
         </sc-if>
+        <sc-if value="{{ showModified }}" hint-placeholder-val="{{ false }}">
+          <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93; margin:14px 0 7px;">LAST MODIFIED <span style="color:#445;">·read-only</span></label>
+          <div style="width:100%; font-family:'IBM Plex Mono',monospace; font-size:13px; color:#8093aa; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:11px 13px;">{{ modifiedText }}</div>
+        </sc-if>
       </div>
 
       <div style="padding:16px 26px 24px; border-top:1px solid rgba(56,189,248,0.12);">
@@ -630,6 +638,8 @@ class Component extends DCLogic {
       filterTrip: [],
       filterText: '',
       filterCountries: [],
+      filterCities: [],
+      heatMode: 'country',
       filtersOpen: false,
       heatOpen: false,
       settingsOpen: false,
@@ -1641,11 +1651,14 @@ class Component extends DCLogic {
       return { form: { ...s.form, [field]: next } };
     });
   }
-  passesFilter(l, ignoreCountry) {
+  passesFilter(l, ignore) {
     const s = this.state;
+    const ignoreCountry = ignore === 'country' || ignore === 'geo';
+    const ignoreCity = ignore === 'city' || ignore === 'geo';
     const yr = l.date ? Number(l.date.slice(0, 4)) : null;
     if (s.filterYear !== 'all' && yr !== s.filterYear) return false;
     if (!ignoreCountry && s.filterCountries.length && !s.filterCountries.includes((l.country || '').trim())) return false;
+    if (!ignoreCity && s.filterCities.length && !s.filterCities.includes(((l.city || '').trim() + '|' + (l.country || '').trim()))) return false;
     if (s.filterStatuses.length && !s.filterStatuses.includes(l.status)) return false;
     if (s.filterVisit.length && !(l.visitTypes || []).some(k => s.filterVisit.includes(k))) return false;
     if (s.filterTrip.length && !(l.tripTypes || []).some(k => s.filterTrip.includes(k))) return false;
@@ -1664,8 +1677,10 @@ class Component extends DCLogic {
   }
   toggleFilters() { this.setState(s => ({ filtersOpen: !s.filtersOpen })); }
   toggleHeat() { this.setState(s => ({ heatOpen: !s.heatOpen })); }
-  clearFilters() { this.setState({ filterStatuses: [], filterVisit: [], filterTrip: [], filterText: '', filterCountries: [] }); }
+  setHeatMode(m) { this.setState({ heatMode: m }); }
+  clearFilters() { this.setState({ filterStatuses: [], filterVisit: [], filterTrip: [], filterText: '', filterCountries: [], filterCities: [] }); }
   toggleCountry(c) { this.setState(s => { const cur = s.filterCountries; return { filterCountries: cur.includes(c) ? cur.filter(x => x !== c) : [...cur, c] }; }); }
+  toggleCity(c) { this.setState(s => { const cur = s.filterCities; return { filterCities: cur.includes(c) ? cur.filter(x => x !== c) : [...cur, c] }; }); }
 
   toggleCfgKey(stateKey, cfgKey) {
     this.setState(s => {
@@ -1767,7 +1782,7 @@ class Component extends DCLogic {
     let list, savedId;
     if (this.state.editingId != null) {
       savedId = this.state.editingId;
-      list = this.state.locations.map(l => l.id === savedId ? { ...l, ...f } : l);
+      list = this.state.locations.map(l => l.id === savedId ? { ...l, ...f, modifiedAt: new Date().toISOString() } : l);
     } else {
       savedId = Date.now();
       list = [...this.state.locations, { ...f, id: savedId, createdAt: new Date().toISOString() }];
@@ -1821,24 +1836,32 @@ class Component extends DCLogic {
     const stops = [[29, 74, 94], [56, 189, 248], [251, 191, 36]];
     const mix = (a, b, t) => `rgb(${Math.round(lerp(a[0], b[0], t))},${Math.round(lerp(a[1], b[1], t))},${Math.round(lerp(a[2], b[2], t))})`;
     const heatColor = (t) => t <= 0.5 ? mix(stops[0], stops[1], t / 0.5) : mix(stops[1], stops[2], (t - 0.5) / 0.5);
-    const heatVisible = locations.filter(l => this.passesFilter(l, true));
-    const byCountry = {};
-    heatVisible.forEach(l => { const c = (l.country || '').trim() || '—'; (byCountry[c] = byCountry[c] || { count: 0, days: 0 }); byCountry[c].count++; byCountry[c].days += this.dayCount(l); });
-    const heatRows = Object.keys(byCountry).map(c => ({ country: c, count: byCountry[c].count, days: byCountry[c].days })).sort((a, b) => b.count - a.count || b.days - a.days);
+    const heatCity = this.state.heatMode === 'city';
+    const heatVisible = locations.filter(l => this.passesFilter(l, heatCity ? 'city' : 'country'));
+    const buckets = {};
+    heatVisible.forEach(l => {
+      const country = (l.country || '').trim();
+      const key = heatCity ? ((l.city || '').trim() || '—') + '|' + country : (country || '—');
+      const label = heatCity ? ((l.city || '').trim() || '—') : (country || '—');
+      const sub = heatCity ? country : '';
+      (buckets[key] = buckets[key] || { key, label, sub, count: 0, days: 0 });
+      buckets[key].count++; buckets[key].days += this.dayCount(l);
+    });
+    const heatRows = Object.keys(buckets).map(k => buckets[k]).sort((a, b) => b.count - a.count || b.days - a.days);
     const heatMax = heatRows.reduce((m, r) => Math.max(m, r.count), 0) || 1;
-    const activeCountries = this.state.filterCountries;
+    const activeGeo = heatCity ? this.state.filterCities : this.state.filterCountries;
     const heatTiles = heatRows.map(r => {
       const t = r.count / heatMax;
       const bg = heatColor(t);
       const dark = t > 0.52;
-      const sel = activeCountries.includes(r.country);
-      const dimmed = activeCountries.length > 0 && !sel;
+      const sel = activeGeo.includes(r.key);
+      const dimmed = activeGeo.length > 0 && !sel;
       return {
-        country: r.country, count: r.count,
+        country: r.label, sub: r.sub, count: r.count,
         countLabel: `${r.count} ${r.count === 1 ? 'trip' : 'trips'} · ${r.days}d`,
         style: `display:flex; flex-direction:column; justify-content:space-between; min-height:62px; padding:11px 12px; border-radius:11px; cursor:pointer; background:${bg}; color:${dark ? '#04111e' : '#e6f1fb'}; opacity:${dimmed ? '0.35' : '1'}; transition:opacity .15s; ` + (sel ? 'outline:2px solid #fbbf24; outline-offset:-2px; border:1px solid transparent;' : 'border:1px solid rgba(255,255,255,0.08);'),
         subColor: dark ? 'rgba(4,17,30,0.7)' : 'rgba(230,241,251,0.7)',
-        onSelect: () => this.toggleCountry(r.country),
+        onSelect: heatCity ? (() => this.toggleCity(r.key)) : (() => this.toggleCountry(r.key)),
       };
     });
     const heatLegend = `linear-gradient(90deg, ${heatColor(0)}, ${heatColor(0.5)}, ${heatColor(1)})`;
@@ -1950,9 +1973,15 @@ class Component extends DCLogic {
       heatEmpty: heatTiles.length === 0,
       heatLegend,
       heatCountryCount: heatRows.length,
-      activeCountryLabel: this.state.filterCountries.join(', '),
-      hasActiveCountry: this.state.filterCountries.length > 0,
-      clearCountry: () => this.setState({ filterCountries: [] }),
+      heatMode: this.state.heatMode,
+      heatCountLabel: heatRows.length + ' ' + (this.state.heatMode === 'city' ? 'cities' : 'countries') + ' · tap to filter the globe',
+      heatModeCountryStyle: this.state.heatMode !== 'city' ? 'flex:1; font-family:\'IBM Plex Mono\',monospace; font-size:10px; letter-spacing:0.06em; padding:5px; border-radius:6px; cursor:pointer; color:#04111e; background:#5fd3ff; border:none; font-weight:600;' : 'flex:1; font-family:\'IBM Plex Mono\',monospace; font-size:10px; letter-spacing:0.06em; padding:5px; border-radius:6px; cursor:pointer; color:#9fb0c6; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12);',
+      heatModeCityStyle: this.state.heatMode === 'city' ? 'flex:1; font-family:\'IBM Plex Mono\',monospace; font-size:10px; letter-spacing:0.06em; padding:5px; border-radius:6px; cursor:pointer; color:#04111e; background:#5fd3ff; border:none; font-weight:600;' : 'flex:1; font-family:\'IBM Plex Mono\',monospace; font-size:10px; letter-spacing:0.06em; padding:5px; border-radius:6px; cursor:pointer; color:#9fb0c6; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12);',
+      setHeatCountry: () => this.setHeatMode('country'),
+      setHeatCity: () => this.setHeatMode('city'),
+      activeCountryLabel: (this.state.heatMode === 'city' ? this.state.filterCities.map(k => k.split('|')[0]) : this.state.filterCountries).join(', '),
+      hasActiveCountry: (this.state.heatMode === 'city' ? this.state.filterCities : this.state.filterCountries).length > 0,
+      clearCountry: () => this.setState({ filterCountries: [], filterCities: [] }),
       heatBtnStyle: 'flex:none; width:38px; display:flex; align-items:center; justify-content:center; border-radius:9px; cursor:pointer; ' + (this.state.heatOpen ? 'color:#04111e; background:linear-gradient(180deg,#5fd3ff,#22aee6); border:1px solid #5fd3ff;' : 'color:#9fd6f0; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25);'),
       selected,
       visitTypeChips,
@@ -2049,6 +2078,8 @@ class Component extends DCLogic {
       saveLabel: this.state.geocoding ? 'Locating…' : (editingId != null ? 'Save changes' : 'Add to globe'),
       showCreated: editingId != null && !!form.createdAt,
       createdText: form.createdAt ? (() => { try { return new Date(form.createdAt).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }); } catch (e) { return form.createdAt; } })() : '',
+      showModified: editingId != null && !!form.modifiedAt,
+      modifiedText: form.modifiedAt ? (() => { try { return new Date(form.modifiedAt).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }); } catch (e) { return form.modifiedAt; } })() : '',
       form,
       onField: this.onField,
       openAdd: this.openAdd,
