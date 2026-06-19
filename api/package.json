@@ -1,0 +1,8 @@
+{
+  "name": "trip-tracker-api",
+  "version": "1.0.0",
+  "description": "Azure Functions API for Trip Tracker — reads/writes trip-tracker.json in Blob Storage.",
+  "dependencies": {
+    "@azure/storage-blob": "^12.17.0"
+  }
+}
