@@ -554,25 +554,25 @@
         <div style="display:flex; gap:12px; margin-bottom:18px;">
           <div style="flex:1;">
             <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93; margin-bottom:7px;">COUNTRY</label>
-            <input name="country" value="{{ form.country }}" onChange="{{ onField }}" placeholder="optional" style="width:100%; font-family:'Space Grotesk',sans-serif; font-size:14px; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:10px; padding:11px 13px; outline:none;">
+            <input name="country" value="{{ form.country }}" onChange="{{ onField }}" placeholder="optional" style="width:100%; font-family:'Space Grotesk',sans-serif; font-size:14px; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(125,200,245,0.42); border-radius:10px; padding:11px 13px; outline:none;">
           </div>
           <div style="flex:1;">
             <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93; margin-bottom:7px;">STATE <span style="color:{{ stateHintColor }};">{{ stateHint }}</span></label>
-            <input name="state" value="{{ form.state }}" onChange="{{ onField }}" placeholder="optional" style="width:100%; font-family:'Space Grotesk',sans-serif; font-size:14px; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:10px; padding:11px 13px; outline:none;">
+            <input name="state" value="{{ form.state }}" onChange="{{ onField }}" placeholder="optional" style="width:100%; font-family:'Space Grotesk',sans-serif; font-size:14px; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(125,200,245,0.42); border-radius:10px; padding:11px 13px; outline:none;">
           </div>
         </div>
 
         <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93; margin-bottom:7px;">CITY <span style="color:#fbbf24;">{{ cityHint }}</span></label>
-        <input name="city" value="{{ form.city }}" onChange="{{ onField }}" placeholder="e.g. Tokyo" style="width:100%; font-family:'Space Grotesk',sans-serif; font-size:14px; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:10px; padding:11px 13px; outline:none; margin-bottom:18px;">
+        <input name="city" value="{{ form.city }}" onChange="{{ onField }}" placeholder="e.g. Tokyo" style="width:100%; font-family:'Space Grotesk',sans-serif; font-size:14px; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(125,200,245,0.42); border-radius:10px; padding:11px 13px; outline:none; margin-bottom:18px;">
 
         <div style="display:flex; gap:12px; margin-bottom:9px;">
           <div style="flex:1;">
             <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93; margin-bottom:7px;">LATITUDE</label>
-            <input name="lat" value="{{ form.lat }}" onChange="{{ onField }}" inputmode="decimal" placeholder="optional" style="width:100%; font-family:'IBM Plex Mono',monospace; font-size:13px; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:10px; padding:11px 13px; outline:none;">
+            <input name="lat" value="{{ form.lat }}" onChange="{{ onField }}" inputmode="decimal" placeholder="optional" style="width:100%; font-family:'IBM Plex Mono',monospace; font-size:13px; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(125,200,245,0.42); border-radius:10px; padding:11px 13px; outline:none;">
           </div>
           <div style="flex:1;">
             <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93; margin-bottom:7px;">LONGITUDE</label>
-            <input name="lon" value="{{ form.lon }}" onChange="{{ onField }}" inputmode="decimal" placeholder="optional" style="width:100%; font-family:'IBM Plex Mono',monospace; font-size:13px; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:10px; padding:11px 13px; outline:none;">
+            <input name="lon" value="{{ form.lon }}" onChange="{{ onField }}" inputmode="decimal" placeholder="optional" style="width:100%; font-family:'IBM Plex Mono',monospace; font-size:13px; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(125,200,245,0.42); border-radius:10px; padding:11px 13px; outline:none;">
           </div>
         </div>
         <button onClick="{{ autoLocate }}" style="width:100%; font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.04em; color:#9fd6f0; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); border-radius:9px; padding:9px; cursor:pointer; margin-bottom:8px;">{{ autoLocateLabel }}</button>
@@ -584,14 +584,9 @@
             <span style="font-family:'Space Grotesk',sans-serif; font-size:11px; color:#fcd34d; background:rgba(251,191,36,0.1); border:1px solid rgba(251,191,36,0.32); border-radius:7px; padding:3px 8px;">This trip already exists — add anyway?</span>
           </sc-if>
         </div>
-        <button onClick="{{ toggleCal }}" style="width:100%; text-align:left; font-family:'IBM Plex Mono',monospace; font-size:13px; color:{{ dateSummaryColor }}; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:10px; padding:11px 13px; cursor:pointer; outline:none;">{{ dateSummary }}</button>
+        <button onClick="{{ toggleCal }}" style="width:100%; text-align:left; font-family:'IBM Plex Mono',monospace; font-size:13px; color:{{ dateSummaryColor }}; background:rgba(255,255,255,0.04); border:1px solid rgba(125,200,245,0.42); border-radius:10px; padding:11px 13px; cursor:pointer; outline:none;">{{ dateSummary }}</button>
         <sc-if value="{{ calOpen }}" hint-placeholder-val="{{ false }}">
           <div style="margin-top:10px; margin-bottom:18px; background:rgba(255,255,255,0.025); border:1px solid rgba(56,189,248,0.16); border-radius:12px; padding:12px;">
-            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
-              <button onClick="{{ prevMonth }}" style="width:28px; height:28px; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#9fb0c6; cursor:pointer; font-size:15px; line-height:1;">‹</button>
-              <div style="font-family:'Space Grotesk',sans-serif; font-size:13.5px; font-weight:600; color:#e6edf6;">{{ calMonthLabel }}</div>
-              <button onClick="{{ nextMonth }}" style="width:28px; height:28px; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#9fb0c6; cursor:pointer; font-size:15px; line-height:1;">›</button>
-            </div>
             <div style="display:flex; margin-bottom:4px;">
               <div style="width:34px; text-align:center; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#566a82;">S</div>
               <div style="width:34px; text-align:center; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#566a82;">M</div>
@@ -601,15 +596,22 @@
               <div style="width:34px; text-align:center; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#566a82;">F</div>
               <div style="width:34px; text-align:center; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#566a82;">S</div>
             </div>
-            <sc-for list="{{ calWeeks }}" as="wk" hint-placeholder-count="6">
-              <div style="display:flex; margin-bottom:2px;">
-                <sc-for list="{{ wk.days }}" as="day" hint-placeholder-count="7">
-                  <div onPointerDown="{{ day.onDown }}" onPointerEnter="{{ day.onEnter }}" style="{{ day.style }}">{{ day.label }}</div>
-                </sc-for>
-              </div>
-            </sc-for>
+            <div ref="{{ setCalScrollRef }}" style="max-height:236px; overflow-y:auto; overflow-x:hidden;">
+              <sc-for list="{{ calMonths }}" as="mon" hint-placeholder-count="3">
+                <div ref="{{ mon.anchorRef }}" style="margin-bottom:4px;">
+                  <div style="position:sticky; top:0; z-index:1; background:rgba(11,17,28,0.96); font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; color:#cfe0f0; padding:4px 2px 6px;">{{ mon.label }}</div>
+                  <sc-for list="{{ mon.weeks }}" as="wk" hint-placeholder-count="6">
+                    <div style="display:flex; margin-bottom:2px;">
+                      <sc-for list="{{ wk.days }}" as="day" hint-placeholder-count="7">
+                        <div onPointerDown="{{ day.onDown }}" onPointerEnter="{{ day.onEnter }}" style="{{ day.style }}">{{ day.label }}</div>
+                      </sc-for>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-for>
+            </div>
             <div style="display:flex; align-items:center; justify-content:space-between; margin-top:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.07);">
-              <span style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#586a82;">Drag across days to pick a range</span>
+              <span style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#586a82;">Click a start day, then an end day · scroll for more months</span>
               <button onClick="{{ clearDates }}" style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#9fb0c6; background:none; border:none; cursor:pointer; text-decoration:underline;">Clear</button>
             </div>
           </div>
@@ -650,7 +652,7 @@
         </sc-if>
 
         <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93; margin:20px 0 7px;">NOTES <span style="color:#445;">·opt</span></label>
-        <textarea name="notes" value="{{ form.notes }}" onChange="{{ onField }}" placeholder="Anything to remember — hotels, highlights, who you went with…" rows="3" style="width:100%; resize:vertical; min-height:74px; font-family:'Space Grotesk',sans-serif; font-size:13.5px; line-height:1.5; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:10px; padding:11px 13px; outline:none;"></textarea>
+        <textarea name="notes" value="{{ form.notes }}" onChange="{{ onField }}" placeholder="Anything to remember — hotels, highlights, who you went with…" rows="3" style="width:100%; resize:vertical; min-height:74px; font-family:'Space Grotesk',sans-serif; font-size:13.5px; line-height:1.5; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(125,200,245,0.42); border-radius:10px; padding:11px 13px; outline:none;"></textarea>
 
         <sc-if value="{{ showCreated }}" hint-placeholder-val="{{ false }}">
           <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93; margin:20px 0 7px;">ADDED <span style="color:#445;">·read-only</span></label>
@@ -2236,7 +2238,20 @@ class Component extends DCLogic {
       const open = !s.calOpen;
       let { calY, calM } = s;
       if (open && s.form.date) { const d = new Date(s.form.date + 'T00:00'); calY = d.getFullYear(); calM = d.getMonth(); }
+      if (open) this._needCalScroll = true;
       return { calOpen: open, calY, calM };
+    });
+  }
+  setCalScrollRef = (el) => { this._calScroll = el; this.scrollCalToAnchor(); };
+  setCalAnchorRef = (el) => { this._calAnchor = el; this.scrollCalToAnchor(); };
+  scrollCalToAnchor() {
+    if (!this._needCalScroll || !this._calScroll || !this._calAnchor) return;
+    this._needCalScroll = false;
+    requestAnimationFrame(() => {
+      try {
+        const top = this._calAnchor.getBoundingClientRect().top - this._calScroll.getBoundingClientRect().top;
+        this._calScroll.scrollTop += top - 4;
+      } catch (e) {}
     });
   }
   clearDates() { this.applyDates('', ''); }
@@ -2452,28 +2467,36 @@ class Component extends DCLogic {
     const { calY, calM } = this.state;
     const selS = form.date, selE = form.dateEnd;
     const cellBase = "width:34px; height:32px; display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono',monospace; font-size:12px; cursor:pointer; user-select:none; -webkit-user-select:none; touch-action:none; border-radius:8px; ";
-    const calWeeks = this.buildCal(calY, calM).map((wk, wi) => ({
-      id: wi,
-      days: wk.map((d, di) => {
-        if (d == null) return { id: wi * 7 + di, label: '', style: cellBase + 'visibility:hidden;', onDown: () => {}, onEnter: () => {} };
-        const iso = this.iso(calY, calM, d);
-        const isS = selS && iso === selS;
-        const isE = selE && iso === selE;
-        const inR = selS && selE && iso > selS && iso < selE;
-        let st = cellBase;
-        if (isS || isE) st += 'background:linear-gradient(180deg,#fcd34d,#fbbf24); color:#04111e; font-weight:600;';
-        else if (inR) st += 'background:rgba(251,191,36,0.16); color:#fcd34d;';
-        else st += 'color:#c8d2e0;';
-        return { id: wi * 7 + di, label: String(d), style: st, onDown: () => this.dayPointerDown(iso), onEnter: () => this.dayPointerEnter(iso) };
-      }),
-    }));
+    const dayCell = (yy, mm, d, idBase, di) => {
+      if (d == null) return { id: idBase + di, label: '', style: cellBase + 'visibility:hidden;', onDown: () => {}, onEnter: () => {} };
+      const iso = this.iso(yy, mm, d);
+      const isS = selS && iso === selS;
+      const isE = selE && iso === selE;
+      const inR = selS && selE && iso > selS && iso < selE;
+      let st = cellBase;
+      if (isS || isE) st += 'background:linear-gradient(180deg,#fcd34d,#fbbf24); color:#04111e; font-weight:600;';
+      else if (inR) st += 'background:rgba(251,191,36,0.16); color:#fcd34d;';
+      else st += 'color:#c8d2e0;';
+      return { id: idBase + di, label: String(d), style: st, onDown: () => this.dayPointerDown(iso), onEnter: () => this.dayPointerEnter(iso) };
+    };
+    // Scrollable window of consecutive months (1 year back → 2 years forward),
+    // so a date range that spans months is just a scroll, not a page flip.
+    const calMonths = [];
+    for (let off = -12; off <= 24; off++) {
+      let mm = calM + off, yy = calY;
+      yy += Math.floor(mm / 12);
+      mm = ((mm % 12) + 12) % 12;
+      const idM = (yy * 12 + mm);
+      const weeks = this.buildCal(yy, mm).map((wk, wi) => ({ id: wi, days: wk.map((d, di) => dayCell(yy, mm, d, idM * 100 + wi * 7, di)) }));
+      calMonths.push({ id: idM, label: `${MN[mm]} ${yy}`, weeks, isAnchor: off === 0, anchorRef: off === 0 ? this.setCalAnchorRef : (() => {}) });
+    }
     const fmtD = (d) => { try { return new Date(d + 'T00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); } catch (e) { return d; } };
     const dateSummary = form.date ? (form.dateEnd ? fmtD(form.date) + '  –  ' + fmtD(form.dateEnd) : fmtD(form.date)) : 'Add dates';
 
     return {
       calOpen: this.state.calOpen,
-      calWeeks,
-      calMonthLabel: `${MN[calM]} ${calY}`,
+      calMonths,
+      setCalScrollRef: this.setCalScrollRef,
       dateSummary,
       dateSummaryColor: form.date ? '#e6edf6' : '#44566e',
       toggleCal: () => this.toggleCal(),

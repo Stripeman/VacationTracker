@@ -28,9 +28,9 @@ A dark, futuristic travel tracker built around a geographically accurate, rotati
 - **Add another after saving:** a sticky toggle in the form — when on, saving keeps the form open with the same details but the **date cleared**, so you can quickly log repeat visits to the same place. Stays on until you turn it off.
 
 ### 🗓 Dates
-- Pick a **single day** or **drag across the calendar** to select a date range.
+- Pick a **single day**, **drag across the calendar**, or **click a start day then an end day** to select a date range.
+- The calendar is a **continuously scrolling list of months** (one year back to two years forward), so a range that spans month boundaries is just a scroll — no paging. It opens scrolled to the current month.
 - Choosing a date auto‑sets the status: a future date → **Planned**, today or past → **Visited** (you can still override).
-- The calendar opens on the current month when adding a new destination.
 
 ### 📌 Smart location resolution
 - Leave the coordinates blank and they're **fetched automatically** on save (geocoding), or use the **Auto‑locate** button in the form.
