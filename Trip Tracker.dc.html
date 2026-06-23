@@ -248,10 +248,12 @@
               <sc-if value="{{ reloadOpen }}" hint-placeholder-val="{{ false }}">
                 <div style="margin-top:10px; background:rgba(56,189,248,0.07); border:1px solid rgba(56,189,248,0.3); border-radius:10px; padding:12px;">
                   <div style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#cfe6f5; line-height:1.55; margin-bottom:11px;">Fetched <b style="color:#9fe6ff;">{{ reloadCount }}</b> trip<span>{{ reloadCountPlural }}</span> from the cloud. You currently have <b style="color:#fcd34d;">{{ reloadLocalCount }}</b> in view.<br><span style="font-size:11px; color:#9fb6cf;">Merge keeps both (cloud wins on duplicates). Overwrite replaces your view. Cancel to export or review first.</span></div>
-                  <div style="display:flex; gap:8px;">
-                    <button onClick="{{ cancelReload }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-size:12px; color:#9fb0c6; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12); border-radius:9px; padding:9px 13px; cursor:pointer;">Cancel</button>
-                    <button onClick="{{ applyReloadMerge }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#04111e; background:rgba(95,211,255,0.92); border:none; border-radius:9px; padding:9px; cursor:pointer;">Merge</button>
-                    <button onClick="{{ applyReloadOverwrite }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#04111e; background:#fbbf24; border:1px solid #fcd34d; border-radius:9px; padding:9px; cursor:pointer;">Overwrite</button>
+                  <div style="display:flex; flex-direction:column; gap:8px;">
+                    <div style="display:flex; gap:8px;">
+                      <button onClick="{{ applyReloadMerge }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#04111e; background:rgba(95,211,255,0.92); border:none; border-radius:9px; padding:9px; cursor:pointer;">Merge</button>
+                      <button onClick="{{ applyReloadOverwrite }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#04111e; background:#fbbf24; border:1px solid #fcd34d; border-radius:9px; padding:9px; cursor:pointer;">Overwrite</button>
+                    </div>
+                    <button onClick="{{ cancelReload }}" style="width:100%; font-family:'Space Grotesk',sans-serif; font-size:12px; color:#9fb0c6; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12); border-radius:9px; padding:9px; cursor:pointer;">Cancel</button>
                   </div>
                 </div>
               </sc-if>
