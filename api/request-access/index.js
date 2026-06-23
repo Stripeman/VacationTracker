@@ -49,7 +49,9 @@ module.exports = async function (context, req) {
     if (!r.ok) {
       const detail = await r.text().catch(() => "");
       context.log.error("Resend error", r.status, detail);
-      json(502, { error: "Email service rejected the request." });
+      let reason = "";
+      try { reason = (JSON.parse(detail).message) || ""; } catch (e) { reason = (detail || "").slice(0, 300); }
+      json(502, { error: "Email service rejected the request.", status: r.status, reason });
       return;
     }
     json(200, { ok: true });
