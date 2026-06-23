@@ -874,7 +874,7 @@ class Component extends DCLogic {
       cloudSeed: 0,
       cloudAvailable: false,
       cloudAuth: false,
-      cloudState: 'ok',
+      cloudState: cfgDataSource === 'cloud' ? 'pending' : 'ok',
       cloudUser: '',
       cloudRoles: [],
       cloudMsg: '',
@@ -1071,7 +1071,7 @@ class Component extends DCLogic {
   async bootData() {
     if (this.state.cfgDataSource === 'cloud') {
       const ok = await this.cloudLoad();
-      if (!ok) await this.loadLocal();
+      if (!ok) { this.setState({ cloudState: 'ok' }); await this.loadLocal(); }
     } else {
       await this.loadLocal();
     }
@@ -1120,12 +1120,14 @@ class Component extends DCLogic {
       const res = await fetch('/api/trips', { cache: 'no-store' });
       if (res.status === 401) {
         this._cloud = true;
-        this.setState({ dataMode: 'cloud', cloudAvailable: true, cloudAuth: false, cloudState: 'anon', cloudMsg: '' });
+        this._cloudCount = 0;
+        this.setState({ dataMode: 'cloud', cloudAvailable: true, cloudAuth: false, cloudState: 'anon', cloudMsg: '', locations: [], selectedId: null, cloudSeed: 0 });
         return true;
       }
       if (res.status === 403) {
         this._cloud = true;
-        this.setState({ dataMode: 'cloud', cloudAvailable: true, cloudAuth: true, cloudState: 'denied', cloudMsg: '' });
+        this._cloudCount = 0;
+        this.setState({ dataMode: 'cloud', cloudAvailable: true, cloudAuth: true, cloudState: 'denied', cloudMsg: '', locations: [], selectedId: null, cloudSeed: 0 });
         this.checkAuth();
         return true;
       }
@@ -1610,7 +1612,8 @@ class Component extends DCLogic {
     const center = [-this.rotation[0], -this.rotation[1]];
     const pulse = (Math.sin(t * 0.005) + 1) / 2;
     const groups = {};
-    for (const loc of this.state.locations) {
+    const _gated = this.state.cfgDataSource === 'cloud' && this.state.cloudState !== 'ok';
+    for (const loc of (_gated ? [] : this.state.locations)) {
       if (!this.passesFilter(loc)) continue;
       const co = this.resolveCoords(loc);
       if (!co) continue;
@@ -2421,7 +2424,11 @@ class Component extends DCLogic {
   }
 
   renderVals() {
-    const { locations, selectedId, formOpen, editingId, form } = this.state;
+    const { selectedId, formOpen, editingId, form } = this.state;
+    // In Cloud mode, render NO trips until cloud access is confirmed ('ok').
+    // While 'pending' (boot, pre-auth) or 'anon'/'denied', the list + globe stay empty.
+    const dataGated = this.state.cfgDataSource === 'cloud' && this.state.cloudState !== 'ok';
+    const locations = dataGated ? [] : this.state.locations;
     const meta = this.META;
 
     // --- year + status filtering ---
@@ -2758,7 +2765,7 @@ class Component extends DCLogic {
       isCloudSource: this.state.cfgDataSource === 'cloud',
       canEdit: this.state.cfgDataSource !== 'cloud' || (this.state.cloudRoles || []).includes('editor'),
       canAdmin: this.state.cfgDataSource !== 'cloud' || (this.state.cloudRoles || []).includes('admin'),
-      cloudBlocked: this.state.cfgDataSource === 'cloud' && this.state.cloudState !== 'ok',
+      cloudBlocked: this.state.cfgDataSource === 'cloud' && (this.state.cloudState === 'anon' || this.state.cloudState === 'denied'),
       cloudBlockTitle: this.state.cloudState === 'denied' ? 'No access' : 'Sign in required',
       cloudBlockMsg: this.state.cloudState === 'denied'
         ? ((this.state.cloudUser ? 'Signed in as ' + this.state.cloudUser + ', but this' : 'This') + ' account has no rights to view or edit this data. Please contact the author to request reader (view) or editor (edit) access.')
