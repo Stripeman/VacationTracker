@@ -244,13 +244,27 @@
                 <span style="flex:1; font-family:'IBM Plex Mono',monospace; font-size:11px; color:{{ cloudAuthColor }};">{{ cloudAuthLabel }}</span>
                 <a href="{{ cloudAuthHref }}" style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#04111e; background:#5fd3ff; border-radius:6px; padding:4px 9px; text-decoration:none; font-weight:600;">{{ cloudAuthAction }}</a>
               </div>
-              <button onClick="{{ reloadCloud }}" style="width:100%; margin-top:9px; font-family:'Space Grotesk',sans-serif; font-size:12px; color:#cfe6f5; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:7px; cursor:pointer;">Reload from cloud</button>
+              <button onClick="{{ reloadCloud }}" disabled="{{ reloadBusy }}" style="width:100%; margin-top:9px; font-family:'Space Grotesk',sans-serif; font-size:12px; color:#cfe6f5; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:7px; cursor:pointer;">{{ reloadBtnLabel }}</button>
+              <sc-if value="{{ reloadOpen }}" hint-placeholder-val="{{ false }}">
+                <div style="margin-top:10px; background:rgba(56,189,248,0.07); border:1px solid rgba(56,189,248,0.3); border-radius:10px; padding:12px;">
+                  <div style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#cfe6f5; line-height:1.55; margin-bottom:11px;">Fetched <b style="color:#9fe6ff;">{{ reloadCount }}</b> trip<span>{{ reloadCountPlural }}</span> from the cloud. You currently have <b style="color:#fcd34d;">{{ reloadLocalCount }}</b> in view.<br><span style="font-size:11px; color:#9fb6cf;">Merge keeps both (cloud wins on duplicates). Overwrite replaces your view. Cancel to export or review first.</span></div>
+                  <div style="display:flex; gap:8px;">
+                    <button onClick="{{ cancelReload }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-size:12px; color:#9fb0c6; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12); border-radius:9px; padding:9px 13px; cursor:pointer;">Cancel</button>
+                    <button onClick="{{ applyReloadMerge }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#04111e; background:rgba(95,211,255,0.92); border:none; border-radius:9px; padding:9px; cursor:pointer;">Merge</button>
+                    <button onClick="{{ applyReloadOverwrite }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#04111e; background:#fbbf24; border:1px solid #fcd34d; border-radius:9px; padding:9px; cursor:pointer;">Overwrite</button>
+                  </div>
+                </div>
+              </sc-if>
               <sc-if value="{{ cloudMsg }}" hint-placeholder-val="{{ false }}">
                 <div style="margin-top:9px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#fcd34d; line-height:1.5;">{{ cloudMsg }}</div>
               </sc-if>
             </sc-if>
             <sc-if value="{{ cloudNotAvailable }}" hint-placeholder-val="{{ true }}">
-              <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#7d90a8; line-height:1.55;">Not connected — deploy to Azure (see DEPLOY-azure.md) to sync edits through the site.</div>
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#7d90a8; line-height:1.55;">Not connected — the <b style="color:#9fb6cf;">/api</b> backend isn't responding. If you've deployed to Azure, the Functions API may not be linked (set <b style="color:#9fb6cf;">api_location: "api"</b> in the deploy workflow). See the Deploy guide.</div>
+              <sc-if value="{{ hasCloudDiag }}" hint-placeholder-val="{{ false }}">
+                <div style="margin-top:8px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#fca5a5; line-height:1.5; background:rgba(248,113,113,0.08); border:1px solid rgba(248,113,113,0.22); border-radius:7px; padding:7px 9px;">Diagnostic: {{ cloudDiag }}</div>
+              </sc-if>
+              <button onClick="{{ retryCloud }}" style="width:100%; margin-top:9px; font-family:'Space Grotesk',sans-serif; font-size:12px; color:#cfe6f5; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:7px; cursor:pointer;">Retry connection</button>
             </sc-if>
           </div>
         </sc-if>
@@ -731,7 +745,7 @@ class Component extends DCLogic {
     super(props);
     this.STORE = 'vacation-location:locations:v4';
     this.CFG = 'vacation-location:config';
-    this.APP_VERSION = '1.6';
+    this.APP_VERSION = '1.8';
     this.DEF_VISIT_TYPES = [
       { key:'natlpark', label:'National park', color:'#4ade80' },
       { key:'city', label:'City', color:'#38bdf8' },
@@ -872,12 +886,16 @@ class Component extends DCLogic {
       dataMode: 'browser',
       confirmLocal: false,
       cloudSeed: 0,
+      reloadOpen: false,
+      reloadBusy: false,
+      reloadCount: 0,
       cloudAvailable: false,
       cloudAuth: false,
       cloudState: cfgDataSource === 'cloud' ? 'pending' : 'ok',
       cloudUser: '',
       cloudRoles: [],
       cloudMsg: '',
+      cloudDiag: '',
       dataFileName: '',
       fsSupported: false,
       needsReconnect: false,
@@ -1131,9 +1149,9 @@ class Component extends DCLogic {
         this.checkAuth();
         return true;
       }
-      if (res.status !== 200 && res.status !== 204) return false; // no API → local
+      if (res.status !== 200 && res.status !== 204) { this.setState({ cloudDiag: 'HTTP ' + res.status + ' from /api/trips' }); return false; } // no API → local
       this._cloud = true;
-      let ns = { dataMode: 'cloud', cloudAvailable: true, cloudState: 'ok' };
+      let ns = { dataMode: 'cloud', cloudAvailable: true, cloudState: 'ok', cloudDiag: '' };
       let cloudLocs = [];
       if (res.status === 200) {
         const data = await res.json();
@@ -1160,7 +1178,55 @@ class Component extends DCLogic {
       this.setState(ns);
       this.checkAuth();
       return true;
-    } catch (e) { return false; }
+    } catch (e) { this.setState({ cloudDiag: (e && e.message) ? ('Could not reach /api/trips — ' + e.message) : 'Network error reaching /api/trips' }); return false; }
+  }
+
+  async reloadCloudPrompt() {
+    this.setState({ cloudMsg: '', reloadBusy: true });
+    try {
+      const res = await fetch('/api/trips', { cache: 'no-store' });
+      if (res.status === 401 || res.status === 403) { this.setState({ reloadBusy: false }); await this.cloudLoad(); return; }
+      if (res.status !== 200 && res.status !== 204) { this.setState({ reloadBusy: false, cloudMsg: 'Cloud returned HTTP ' + res.status + '.' }); return; }
+      let cloudLocs = [], settings = null;
+      if (res.status === 200) {
+        const data = await res.json();
+        cloudLocs = Array.isArray(data) ? data : (data.locations || []);
+        settings = data && data.settings;
+      }
+      this._reloadStage = { locs: cloudLocs, settings };
+      this.setState({ reloadBusy: false, reloadOpen: true, reloadCount: cloudLocs.length });
+    } catch (e) {
+      this.setState({ reloadBusy: false, cloudMsg: 'Could not reach the cloud.' });
+    }
+  }
+  cancelReload() { this.setState({ reloadOpen: false }); }
+  applyReload(mode) {
+    const stage = this._reloadStage || { locs: [], settings: null };
+    const cloud = stage.locs || [];
+    const local = this.state.locations || [];
+    let merged, msg, pushBack = false;
+    if (mode === 'overwrite') {
+      merged = cloud.slice();
+      msg = 'Replaced view with ' + cloud.length + ' cloud trip' + (cloud.length === 1 ? '' : 's') + '.';
+    } else {
+      const byId = {};
+      for (const l of local) byId[l.id] = l;
+      let added = 0, updated = 0;
+      for (const c of cloud) {
+        if (byId[c.id]) { if (JSON.stringify(byId[c.id]) !== JSON.stringify(c)) updated++; } else added++;
+        byId[c.id] = c; // cloud wins on conflicting id
+      }
+      merged = Object.values(byId);
+      pushBack = (merged.length !== cloud.length); // local-only trips need saving back to cloud
+      msg = 'Merged — ' + added + ' added, ' + updated + ' updated, ' + merged.length + ' total.';
+    }
+    const ns = { reloadOpen: false, locations: merged, selectedId: null, cloudSeed: 0, cloudMsg: msg };
+    if (stage.settings && merged.length) Object.assign(ns, this.applySettings(stage.settings));
+    this.persistLocal(merged);
+    this._cloudCount = merged.length;
+    this._cloudSynced = true;
+    this.setState(ns);
+    if (pushBack && this._cloud) this.cloudSave(merged);
   }
 
   uploadLocalToCloud() {
@@ -2750,7 +2816,19 @@ class Component extends DCLogic {
       cloudDotColor: this.state.cloudAvailable ? (this.state.cloudAuth ? '#34d399' : '#fbbf24') : '#5a6b80',
       cloudAuth: this.state.cloudAuth,
       cloudMsg: this.state.cloudMsg,
-      reloadCloud: () => this.cloudLoad(),
+      cloudDiag: this.state.cloudDiag,
+      hasCloudDiag: !!this.state.cloudDiag,
+      retryCloud: () => this.cloudLoad(),
+      reloadCloud: () => this.reloadCloudPrompt(),
+      reloadBtnLabel: this.state.reloadBusy ? 'Fetching…' : 'Reload from cloud',
+      reloadBusy: this.state.reloadBusy,
+      reloadOpen: this.state.reloadOpen,
+      reloadCount: this.state.reloadCount,
+      reloadCountPlural: this.state.reloadCount === 1 ? '' : 's',
+      reloadLocalCount: (this.state.locations || []).length,
+      applyReloadMerge: () => this.applyReload('merge'),
+      applyReloadOverwrite: () => this.applyReload('overwrite'),
+      cancelReload: () => this.cancelReload(),
       dsLocalStyle: segStyle(this.state.cfgDataSource === 'local', '#5fd3ff'),
       dsCloudStyle: segStyle(this.state.cfgDataSource === 'cloud', '#5fd3ff'),
       setLocalSource: () => this.requestLocalSource(),

@@ -2,7 +2,7 @@
 
 A dark, futuristic travel tracker built around a geographically accurate, rotating 3D globe. Plot every destination you've **visited**, have **planned**, or are still **dreaming** about — each pinned to the globe with colour‑coded markers, rich trip details, and flexible filtering.
 
-![Version](https://img.shields.io/badge/version-v1.6-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
+![Version](https://img.shields.io/badge/version-v1.8-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
 
 ---
 
@@ -58,6 +58,7 @@ A dark, futuristic travel tracker built around a geographically accurate, rotati
 - **Data source switch** (⚙ → Settings → Data & Storage): choose **Local** or **Cloud**.
   - **Local** — data stays in this browser. On first run with no saved data it loads `trip-tracker.json`, and if that's empty it falls back to `demo-data.json`.
   - **Cloud** — syncs to the Azure API; reads need the **`reader`** (or `editor`) role, saves need **`editor`**. Cloud data is private to authorized users.
+- **Reload from cloud** (⚙ → System, Cloud mode) re-fetches the cloud dataset and tells you **how many records it fetched**, then asks what to do: **Merge** (keep both sets — cloud wins on duplicate ids, and any local‑only trips are pushed back to the cloud), **Overwrite** (replace your current view with the cloud copy), or **Cancel** (so you can export or review your local data first). Nothing changes until you choose.
 - **Role-aware UI:** in Cloud mode the **Add / Edit / Delete** controls are hidden unless your account has the `editor` role, and **Import / Clear data** require the `admin` role (read-only `reader` accounts see the data but no editing actions). Local mode always allows editing.
 - **Export / Import** with independent **Data** and **Settings** switches: back up or restore destinations, display settings, or both. Import only applies what you've switched on *and* what the file contains.
 - **Clear data** always downloads a dated backup first.

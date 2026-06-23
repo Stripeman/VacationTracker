@@ -56,6 +56,31 @@ api/                      → the Functions API
    - The API enforces read/write: `GET /api/trips` requires `reader` or `editor`; `POST/PUT` requires `editor`. The **Import** and **Clear data** controls are additionally hidden in the UI unless the account has `admin`.
    - Roles are baked into the session at sign-in — after assigning/changing a role, the user must **sign out and back in** for it to take effect.
 
+## Troubleshooting — "Not connected" / app shows Browser storage on the live site
+
+If the deployed site stays on **Browser storage** and ⚙ → System → CLOUD SYNC shows **"Not connected"** with a diagnostic like **`HTTP 404 from /api/trips`**, the Functions API isn't deployed. The cause is almost always the **GitHub Actions workflow has a blank `api_location`** — the deploy log shows:
+
+```
+No Api directory specified. Azure Functions will not be created.
+```
+
+Fix it in the workflow file (one line):
+
+1. In your repo, open `.github/workflows/azure-static-web-apps-*.yml`.
+2. Find the `Azure/static-web-apps-deploy` step's `with:` block and set:
+   ```yaml
+   app_location: "/"
+   api_location: "api"      # ← was "" — this is what was missing
+   output_location: ""
+   ```
+3. Commit + push. The Action redeploys; watch the log for **"Found Api directory"** / a Functions build (it runs `npm install` in `api/`).
+4. Reload the site → ⚙ → System → **Retry connection**. The diagnostic should clear; an anon visitor now gets a 401 → the **Sign in** prompt instead of "Not connected".
+
+Other diagnostics and what they mean:
+- **`HTTP 404 from /api/trips`** — API not deployed (the `api_location` fix above), or `staticwebapp.config.json` not deployed.
+- **`HTTP 500`** — API deployed but `AZURE_STORAGE_CONNECTION_STRING` is missing/wrong (set it in Static Web App → Environment variables, then it works without redeploy).
+- **`Could not reach /api/trips` / network error** — you're opening the file directly (not through the SWA host) or offline; this is expected in Local mode.
+
 ## How data flows once deployed
 
 - The **page always loads** (not gated). In **Cloud** mode, an unauthorized visitor sees a clean *No access / Sign in* message — never your data.

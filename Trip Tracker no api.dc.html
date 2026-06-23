@@ -687,7 +687,7 @@ class Component extends DCLogic {
     super(props);
     this.STORE = 'vacation-location:locations:v4';
     this.CFG = 'vacation-location:config';
-    this.APP_VERSION = '1.6';
+    this.APP_VERSION = '1.8';
     this.DEF_VISIT_TYPES = [
       { key:'natlpark', label:'National park', color:'#4ade80' },
       { key:'city', label:'City', color:'#38bdf8' },
@@ -830,6 +830,7 @@ class Component extends DCLogic {
       cloudUser: '',
       cloudRoles: [],
       cloudMsg: '',
+      cloudDiag: '',
       dataFileName: '',
       fsSupported: false,
       needsReconnect: false,
@@ -1083,9 +1084,9 @@ class Component extends DCLogic {
         this.checkAuth();
         return true;
       }
-      if (res.status !== 200 && res.status !== 204) return false; // no API → local
+      if (res.status !== 200 && res.status !== 204) { this.setState({ cloudDiag: 'HTTP ' + res.status + ' from /api/trips' }); return false; } // no API → local
       this._cloud = true;
-      let ns = { dataMode: 'cloud', cloudAvailable: true, cloudState: 'ok' };
+      let ns = { dataMode: 'cloud', cloudAvailable: true, cloudState: 'ok', cloudDiag: '' };
       let cloudLocs = [];
       if (res.status === 200) {
         const data = await res.json();
@@ -1112,7 +1113,7 @@ class Component extends DCLogic {
       this.setState(ns);
       this.checkAuth();
       return true;
-    } catch (e) { return false; }
+    } catch (e) { this.setState({ cloudDiag: (e && e.message) ? ('Could not reach /api/trips — ' + e.message) : 'Network error reaching /api/trips' }); return false; }
   }
 
   uploadLocalToCloud() {
