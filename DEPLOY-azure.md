@@ -56,6 +56,16 @@ api/                      → the Functions API
    - The API enforces read/write: `GET /api/trips` requires `reader` or `editor`; `POST/PUT` requires `editor`. The **Import** and **Clear data** controls are additionally hidden in the UI unless the account has `admin`.
    - Roles are baked into the session at sign-in — after assigning/changing a role, the user must **sign out and back in** for it to take effect.
 
+6. **Email access requests (optional, via Resend).** When someone without access submits their email on the sign-in screen, the app can email you the request through a small `/api/request-access` Function backed by [Resend](https://resend.com). Without this, the button falls back to opening the visitor's own mail app (`mailto:`) — so this step is optional but nicer.
+   - Create a free **Resend** account → **API Keys** → create a key (starts with `re_`).
+   - **Verify a sender:** add and verify a domain in Resend (recommended), or use Resend's `onboarding@resend.dev` test sender to start. Your `RESEND_FROM` must use a verified address.
+   - In the Azure Portal → your Static Web App → **Environment variables**, add:
+     - `RESEND_API_KEY` = your Resend key
+     - `RESEND_FROM` = a verified sender, e.g. `Trip Tracker <noreply@yourdomain.com>`
+     - `ACCESS_REQUEST_TO` = the address that should receive requests (your email)
+   - That's it — no redeploy needed for env-var changes. The visitor's email is put in the message **reply-to**, so you can reply to them directly. For security the recipient is read **only** from `ACCESS_REQUEST_TO` on the server (never from the request), so the endpoint can't be used as an open mail relay.
+   - Set the same address in the app at **⚙ → System → Access requests** so it's also shown on the sign-in screen as a direct-email fallback.
+
 ## Troubleshooting — "Not connected" / app shows Browser storage on the live site
 
 If the deployed site stays on **Browser storage** and ⚙ → System → CLOUD SYNC shows **"Not connected"** with a diagnostic like **`HTTP 404 from /api/trips`**, the Functions API isn't deployed. The cause is almost always the **GitHub Actions workflow has a blank `api_location`** — the deploy log shows:
@@ -80,6 +90,7 @@ Other diagnostics and what they mean:
 - **`HTTP 404 from /api/trips`** — API not deployed (the `api_location` fix above), or `staticwebapp.config.json` not deployed.
 - **`HTTP 500`** — API deployed but `AZURE_STORAGE_CONNECTION_STRING` is missing/wrong (set it in Static Web App → Environment variables, then it works without redeploy).
 - **`Could not reach /api/trips` / network error** — you're opening the file directly (not through the SWA host) or offline; this is expected in Local mode.
+- **Access-request email not arriving** — the `/api/request-access` Function falls back to a `mailto:` link unless all three of `RESEND_API_KEY`, `RESEND_FROM`, and `ACCESS_REQUEST_TO` are set (see step 6). If set but still failing, check the Function logs: a Resend rejection usually means `RESEND_FROM` isn't a verified sender.
 
 ## How data flows once deployed
 
