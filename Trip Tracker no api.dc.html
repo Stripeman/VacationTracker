@@ -91,6 +91,22 @@
 
     <!-- settings / storage panel -->
     <sc-if value="{{ settingsOpen }}" hint-placeholder-val="{{ false }}">
+      <sc-if value="{{ pendingDelete }}" hint-placeholder-val="{{ null }}">
+        <div style="position:fixed; inset:0; z-index:60; display:flex; align-items:center; justify-content:center; background:rgba(4,8,15,0.62); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); pointer-events:auto; animation:vl-fade 0.15s ease;">
+          <div style="width:340px; background:rgba(12,18,28,0.98); border:1px solid rgba(239,68,68,0.34); border-radius:14px; padding:20px; box-shadow:0 20px 60px rgba(0,0,0,0.6);">
+            <div style="display:flex; align-items:center; gap:9px; margin-bottom:13px;">
+              <span style="width:30px; height:30px; flex:none; border-radius:8px; background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.34); color:#f0a6a6; display:flex; align-items:center; justify-content:center; font-size:15px;">⚠</span>
+              <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14.5px; color:#f3d2d2;">Remove this {{ pendingDelete.noun }}?</div>
+            </div>
+            <div style="font-family:'Space Grotesk',sans-serif; font-size:13px; color:#cdd9e6; line-height:1.55; margin-bottom:10px;">You're about to delete <b style="color:#fff;">{{ pendingDelete.label }}</b> from your {{ pendingDelete.noun }} list.</div>
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; line-height:1.6; color:{{ pendingDeleteColor }}; background:{{ pendingDeleteBg }}; border:1px solid {{ pendingDeleteBorder }}; border-radius:9px; padding:10px 11px; margin-bottom:16px;">{{ pendingDeleteMsg }}</div>
+            <div style="display:flex; gap:9px;">
+              <button onClick="{{ cancelDataDelete }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:13px; color:#9fb0c6; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.14); border-radius:10px; padding:10px; cursor:pointer;">Keep it</button>
+              <button onClick="{{ confirmDataDelete }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:13px; font-weight:600; color:#fff; background:#dc2626; border:1px solid #ef4444; border-radius:10px; padding:10px; cursor:pointer; box-shadow:0 0 16px rgba(220,38,38,0.4);">Remove</button>
+            </div>
+          </div>
+        </div>
+      </sc-if>
       <div style="position:absolute; top:80px; right:30px; width:384px; max-height:calc(100vh - 110px); display:flex; flex-direction:column; pointer-events:auto; background:rgba(8,14,24,0.94); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px); border:1px solid rgba(56,189,248,0.22); border-radius:14px; padding:18px; box-shadow:0 16px 50px rgba(0,0,0,0.55); animation:vl-fade 0.2s ease;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex:none;">
           <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088;">CONFIGURATION</div>
@@ -127,21 +143,24 @@
           <div style="flex:1; min-width:0; overflow-y:auto; padding-right:2px;">
 
         <sc-if value="{{ showSystemTab }}" hint-placeholder-val="{{ false }}">
-        <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088; margin-bottom:12px;">DISPLAY</div>
-        <div style="display:flex; flex-direction:column; gap:11px; margin-bottom:18px;">
-          <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94; margin-bottom:8px;">FORM &amp; CARDS</div>
+        <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:2px 13px; margin-bottom:14px;">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px 0;">
             <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Trip details open on form</span>
             <button onClick="{{ toggleDetailsFormDefault }}" style="{{ cfgFormStyle }}">{{ cfgFormLabel }}</button>
           </div>
-          <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px 0; border-top:1px solid rgba(255,255,255,0.06);">
             <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Show trip details on card</span>
             <button onClick="{{ toggleDetailsCard }}" style="{{ cfgCardStyle }}">{{ cfgCardLabel }}</button>
           </div>
-          <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px 0; border-top:1px solid rgba(255,255,255,0.06);">
             <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Show status on card</span>
             <button onClick="{{ toggleStatusCard }}" style="{{ cfgStatusStyle }}">{{ cfgStatusLabel }}</button>
           </div>
-          <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+        </div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94; margin-bottom:8px;">GLOBE</div>
+        <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:2px 13px; margin-bottom:4px;">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px 0;">
             <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Spin the globe</span>
             <button onClick="{{ toggleSpin }}" style="{{ cfgSpinStyle }}">{{ cfgSpinLabel }}</button>
           </div>
@@ -150,50 +169,53 @@
 
         <sc-if value="{{ showFiltersTab }}" hint-placeholder-val="{{ true }}">
         <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088; margin-bottom:12px;">FILTERS</div>
-        <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:4px;">
-          <div>
-            <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:#586a82; margin-bottom:6px;">SORT DESTINATIONS</div>
-            <div style="display:flex; gap:6px;">
+        <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:2px 13px; margin-bottom:13px;">
+          <div style="display:flex; align-items:center; gap:11px; padding:10px 0;">
+            <div style="flex:none; width:48px; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94;">SORT</div>
+            <div style="flex:1; display:flex; gap:6px;">
               <sc-for list="{{ defSortSeg }}" as="seg" hint-placeholder-count="2">
                 <button onClick="{{ seg.onSelect }}" style="{{ seg.style }}">{{ seg.label }}</button>
               </sc-for>
             </div>
           </div>
-          <div>
-            <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:#586a82; margin-bottom:6px;">YEAR</div>
-            <div style="display:flex; gap:6px;">
+          <div style="display:flex; align-items:center; gap:11px; padding:10px 0; border-top:1px solid rgba(255,255,255,0.06);">
+            <div style="flex:none; width:48px; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94;">YEAR</div>
+            <div style="flex:1; display:flex; gap:6px;">
               <sc-for list="{{ defYearSeg }}" as="seg" hint-placeholder-count="2">
                 <button onClick="{{ seg.onSelect }}" style="{{ seg.style }}">{{ seg.label }}</button>
               </sc-for>
             </div>
           </div>
-          <div>
-            <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:#586a82; margin-bottom:6px;">TRIP TYPE</div>
-            <div style="display:flex; gap:6px;">
+          <div style="display:flex; align-items:center; gap:11px; padding:10px 0; border-top:1px solid rgba(255,255,255,0.06);">
+            <div style="flex:none; width:48px; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94;">TRIP</div>
+            <div style="flex:1; display:flex; flex-wrap:wrap; gap:6px;">
               <sc-for list="{{ defTripSeg }}" as="seg" hint-placeholder-count="3">
                 <button onClick="{{ seg.onSelect }}" style="{{ seg.style }}">{{ seg.label }}</button>
               </sc-for>
             </div>
           </div>
+          <div style="display:flex; align-items:center; gap:11px; padding:10px 0; border-top:1px solid rgba(255,255,255,0.06);">
+            <div style="flex:none; width:48px; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94;">STATUS</div>
+            <div style="flex:1; display:flex; flex-wrap:wrap; gap:6px;">
+              <sc-for list="{{ defStatusSeg }}" as="seg" hint-placeholder-count="2">
+                <button onClick="{{ seg.onSelect }}" style="{{ seg.style }}">{{ seg.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:13px; display:flex; flex-direction:column; gap:14px; margin-bottom:4px;">
           <div>
-            <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:#586a82; margin-bottom:6px;">VISIT TYPE</div>
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94; margin-bottom:8px;">VISIT TYPE</div>
             <div style="display:flex; flex-wrap:wrap; gap:6px;">
               <sc-for list="{{ defVisitSeg }}" as="seg" hint-placeholder-count="3">
                 <button onClick="{{ seg.onSelect }}" style="{{ seg.style }}">{{ seg.label }}</button>
               </sc-for>
             </div>
           </div>
-          <div>
-            <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:#586a82; margin-bottom:6px;">STATUS</div>
-            <div style="display:flex; gap:6px;">
-              <sc-for list="{{ defStatusSeg }}" as="seg" hint-placeholder-count="2">
-                <button onClick="{{ seg.onSelect }}" style="{{ seg.style }}">{{ seg.label }}</button>
-              </sc-for>
-            </div>
-          </div>
-          <div>
-            <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:#586a82; margin-bottom:6px;">TRAVELER</div>
-            <div style="display:flex; gap:6px;">
+          <div style="border-top:1px solid rgba(255,255,255,0.06); padding-top:13px;">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94; margin-bottom:8px;">TRAVELER</div>
+            <div style="display:flex; flex-wrap:wrap; gap:6px;">
               <sc-for list="{{ defTravelerSeg }}" as="seg" hint-placeholder-count="3">
                 <button onClick="{{ seg.onSelect }}" style="{{ seg.style }}">{{ seg.label }}</button>
               </sc-for>
@@ -223,17 +245,16 @@
           </div>
         </sc-if>
         <div style="margin-top:14px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.08);">
-          <div style="display:flex; align-items:center; gap:8px; margin-bottom:11px;">
-            <span style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:#586a82;">BACKUP — INCLUDE</span>
-            <span style="flex:1; height:1px; background:rgba(255,255,255,0.06);"></span>
-          </div>
-          <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px;">
-            <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Data</span>
-            <button onClick="{{ toggleSelData }}" style="{{ selDataStyle }}">{{ selDataLabel }}</button>
-          </div>
-          <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
-            <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Settings</span>
-            <button onClick="{{ toggleSelSettings }}" style="{{ selSettingsStyle }}">{{ selSettingsLabel }}</button>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94; margin-bottom:8px;">BACKUP — INCLUDE</div>
+          <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:2px 13px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px 0;">
+              <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Data</span>
+              <button onClick="{{ toggleSelData }}" style="{{ selDataStyle }}">{{ selDataLabel }}</button>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px 0; border-top:1px solid rgba(255,255,255,0.06);">
+              <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Settings</span>
+              <button onClick="{{ toggleSelSettings }}" style="{{ selSettingsStyle }}">{{ selSettingsLabel }}</button>
+            </div>
           </div>
           <div style="display:flex; gap:8px; margin-top:13px;">
             <button onClick="{{ exportSelected }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#5fd3ff; background:rgba(95,211,255,0.12); border:1px solid #5fd3ff; border-radius:9px; padding:9px; cursor:pointer; font-weight:600; transition:all .15s; box-shadow:0 0 9px rgba(95,211,255,0.26);">Export</button>
@@ -278,8 +299,9 @@
           <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088; margin-bottom:6px;">CONFIGURATION DATA</div>
           <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#586a82; line-height:1.55; margin-bottom:16px;">Rename, recolour, add or remove the options used across the form, filters, and globe. Every list — including Statuses — can be renamed, recoloured, added to, and removed.</div>
           <sc-for list="{{ dataEditors }}" as="grp" hint-placeholder-count="4">
-            <div style="margin-bottom:17px;">
-              <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:#586a82; margin-bottom:8px;">{{ grp.title }}</div>
+            <div style="margin-bottom:13px;">
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94; margin-bottom:8px;">{{ grp.title }}</div>
+              <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:12px;">
               <div style="display:flex; flex-direction:column; gap:6px;">
                 <sc-for list="{{ grp.items }}" as="it" hint-placeholder-count="3">
                   <div style="display:flex; align-items:center; gap:7px;">
@@ -292,8 +314,9 @@
                 </sc-for>
               </div>
               <sc-if value="{{ grp.canAdd }}" hint-placeholder-val="{{ true }}">
-                <button onClick="{{ grp.onAdd }}" style="margin-top:8px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.04em; color:#9fd6f0; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.22); border-radius:8px; padding:6px 12px; cursor:pointer;">+ Add</button>
+                <button onClick="{{ grp.onAdd }}" style="margin-top:10px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.04em; color:#9fd6f0; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.22); border-radius:8px; padding:6px 12px; cursor:pointer;">+ Add</button>
               </sc-if>
+              </div>
             </div>
           </sc-for>
         </sc-if>
@@ -444,6 +467,24 @@
             <button onClick="{{ deleteSelected }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-weight:500; font-size:13px; color:#f0a6a6; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); border-radius:10px; padding:10px 14px; cursor:pointer;">Delete</button>
           </div>
         </sc-if>
+      </div>
+    </sc-if>
+
+    <!-- trip delete confirmation -->
+    <sc-if value="{{ pendingTripDelete }}" hint-placeholder-val="{{ null }}">
+      <div style="position:fixed; inset:0; z-index:60; display:flex; align-items:center; justify-content:center; background:rgba(4,8,15,0.62); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); pointer-events:auto; animation:vl-fade 0.15s ease;">
+        <div style="width:340px; background:rgba(12,18,28,0.98); border:1px solid rgba(239,68,68,0.34); border-radius:14px; padding:20px; box-shadow:0 20px 60px rgba(0,0,0,0.6);">
+          <div style="display:flex; align-items:center; gap:9px; margin-bottom:13px;">
+            <span style="width:30px; height:30px; flex:none; border-radius:8px; background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.34); color:#f0a6a6; display:flex; align-items:center; justify-content:center; font-size:15px;">⚠</span>
+            <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14.5px; color:#f3d2d2;">Delete this trip?</div>
+          </div>
+          <div style="font-family:'Space Grotesk',sans-serif; font-size:13px; color:#cdd9e6; line-height:1.55; margin-bottom:10px;">You're about to delete <b style="color:#fff;">{{ pendingTripDelete.place }}</b> from your trips.</div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; line-height:1.6; color:#e9c46a; background:rgba(251,191,36,0.08); border:1px solid rgba(251,191,36,0.28); border-radius:9px; padding:10px 11px; margin-bottom:16px;">This removes the trip and its marker from the globe. This can't be undone.</div>
+          <div style="display:flex; gap:9px;">
+            <button onClick="{{ cancelTripDelete }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:13px; color:#9fb0c6; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.14); border-radius:10px; padding:10px; cursor:pointer;">Keep it</button>
+            <button onClick="{{ confirmTripDelete }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:13px; font-weight:600; color:#fff; background:#dc2626; border:1px solid #ef4444; border-radius:10px; padding:10px; cursor:pointer; box-shadow:0 0 16px rgba(220,38,38,0.4);">Delete</button>
+          </div>
+        </div>
       </div>
     </sc-if>
 
@@ -702,7 +743,7 @@ class Component extends DCLogic {
     super(props);
     this.STORE = 'vacation-location:locations:v4';
     this.CFG = 'vacation-location:config';
-    this.APP_VERSION = '2.6';
+    this.APP_VERSION = '3.0';
     this.DEF_VISIT_TYPES = [
       { key:'natlpark', label:'National park', color:'#4ade80' },
       { key:'city', label:'City', color:'#38bdf8' },
@@ -851,6 +892,8 @@ class Component extends DCLogic {
       needsReconnect: false,
       storageMsg: '',
       confirmClear: false,
+      pendingDelete: null,
+      pendingTripDelete: null,
       includeSettings: true,
       selData: true,
       selSettings: true,
@@ -883,6 +926,8 @@ class Component extends DCLogic {
     this.saveForm = this.saveForm.bind(this);
     this.editSelected = this.editSelected.bind(this);
     this.deleteSelected = this.deleteSelected.bind(this);
+    this.cancelTripDelete = this.cancelTripDelete.bind(this);
+    this.confirmTripDelete = this.confirmTripDelete.bind(this);
     this.deselect = this.deselect.bind(this);
     this.loop = this.loop.bind(this);
     this.setImportInput = (el) => { this.importInput = el; };
@@ -2212,12 +2257,29 @@ class Component extends DCLogic {
     });
   }
   dataItemCommit() { this.bumpVersion(); }
+  dataItemUsage(cat, key) {
+    const locs = this.state.locations || [];
+    if (cat === 'visit') return locs.filter(l => (l.visitTypes || []).includes(key)).length;
+    if (cat === 'trip') return locs.filter(l => (l.tripTypes || []).includes(key)).length;
+    if (cat === 'traveler') return locs.filter(l => (l.travelers || []).includes(key)).length;
+    if (cat === 'status') return locs.filter(l => l.status === key).length;
+    return 0;
+  }
   dataItemRemove(cat, key) {
     const lk = this._listKey(cat);
+    const item = (this.state[lk] || []).find(o => o.key === key);
+    const noun = { visit: 'visit type', trip: 'trip type', traveler: 'traveler', status: 'status' }[cat] || 'item';
+    this.setState({ pendingDelete: { cat, key, label: item ? item.label : key, noun, count: this.dataItemUsage(cat, key) } });
+  }
+  cancelDataDelete() { this.setState({ pendingDelete: null }); }
+  confirmDataDelete() {
+    const pd = this.state.pendingDelete;
+    if (!pd) return;
+    const lk = this._listKey(pd.cat);
     this.setState(s => {
-      const list = s[lk].filter(o => o.key !== key);
-      if (!list.length) return {};
-      return this.persistConfig(s, { [lk]: list });
+      const list = s[lk].filter(o => o.key !== pd.key);
+      if (!list.length) return { pendingDelete: null };
+      return { ...this.persistConfig(s, { [lk]: list }), pendingDelete: null };
     });
   }
   dataItemAdd(cat) {
@@ -2238,9 +2300,18 @@ class Component extends DCLogic {
 
   deleteSelected() {
     const id = this.state.selectedId;
-    const list = this.state.locations.filter(l => l.id !== id);
+    const loc = this.state.locations.find(l => l.id === id);
+    if (!loc) return;
+    const place = [loc.city, loc.state, loc.country].filter(Boolean).join(', ') || 'this trip';
+    this.setState({ pendingTripDelete: { id, place } });
+  }
+  cancelTripDelete() { this.setState({ pendingTripDelete: null }); }
+  confirmTripDelete() {
+    const pd = this.state.pendingTripDelete;
+    if (!pd) return;
+    const list = this.state.locations.filter(l => l.id !== pd.id);
     this.persist(list);
-    this.setState({ locations: list, selectedId: null });
+    this.setState({ locations: list, selectedId: null, pendingTripDelete: null });
   }
 
   deselect() { this.setState({ selectedId: null }); this.expandedKey = null; }
@@ -2755,13 +2826,20 @@ class Component extends DCLogic {
       needsReconnect: this.state.needsReconnect,
       storageMsg: this.state.storageMsg,
       confirmClear: this.state.confirmClear,
+      pendingDelete: this.state.pendingDelete,
+      pendingDeleteMsg: (() => { const pd = this.state.pendingDelete; if (!pd) return ''; return pd.count > 0 ? (pd.count + (pd.count === 1 ? ' trip currently uses' : ' trips currently use') + ' this. They keep the label on their record, but it will no longer appear as a filter or an option in the form.') : 'No trips use this yet — safe to remove.'; })(),
+      pendingDeleteColor: (this.state.pendingDelete && this.state.pendingDelete.count > 0) ? '#e9c46a' : '#7ec9a0',
+      pendingDeleteBg: (this.state.pendingDelete && this.state.pendingDelete.count > 0) ? 'rgba(251,191,36,0.08)' : 'rgba(52,211,153,0.07)',
+      pendingDeleteBorder: (this.state.pendingDelete && this.state.pendingDelete.count > 0) ? 'rgba(251,191,36,0.28)' : 'rgba(52,211,153,0.26)',
+      cancelDataDelete: () => this.cancelDataDelete(),
+      confirmDataDelete: () => this.confirmDataDelete(),
       notConfirmClear: !this.state.confirmClear,
       authorOpen: this.state.authorOpen,
       authorName: 'Terry Remsik',
       authorEmail: ['Terry.Remsik', 'gmail.com'].join('@'),
       authorMailto: 'mailto:' + ['Terry.Remsik', 'gmail.com'].join('@'),
       appVersion: 'v' + this.APP_VERSION,
-      appUpdated: 'June 23, 2026',
+      appUpdated: 'June 24, 2026',
       updateAvailable: this.state.updateAvailable,
       showUpdateBar: this.state.updateAvailable && !this.state.updateDismissed,
       latestVersion: this.state.latestVersion,
@@ -2826,6 +2904,9 @@ class Component extends DCLogic {
       saveForm: this.saveForm,
       editSelected: this.editSelected,
       deleteSelected: this.deleteSelected,
+      pendingTripDelete: this.state.pendingTripDelete,
+      cancelTripDelete: this.cancelTripDelete,
+      confirmTripDelete: this.confirmTripDelete,
       deselect: this.deselect,
       statusPlanned: () => this.setStatus('planned'),
       statusVisited: () => this.setStatus('visited'),

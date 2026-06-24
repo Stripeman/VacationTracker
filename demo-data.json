@@ -24,6 +24,23 @@
       "travelers": ["terry"],
       "createdAt": "2026-06-19T13:48:07.884Z",
       "modifiedAt": "2026-06-19T13:48:07.884Z"
+    },
+    {
+      "id": 2,
+      "city": "Kyoto",
+      "state": "",
+      "country": "Japan",
+      "lon": "135.7681",
+      "lat": "35.0116",
+      "date": "2025-04-03",
+      "dateEnd": "2025-04-11",
+      "status": "visited",
+      "notes": "Cherry blossoms along the Philosopher's Path",
+      "visitTypes": ["city", "cultural"],
+      "tripTypes": ["vacation"],
+      "travelers": ["karen"],
+      "createdAt": "2026-06-19T13:48:07.884Z",
+      "modifiedAt": "2026-06-19T13:48:07.884Z"
     }
   ]
 }
