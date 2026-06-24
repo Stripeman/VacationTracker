@@ -360,11 +360,16 @@
               <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:#586a82; margin-bottom:8px;">{{ grp.title }}</div>
               <div style="display:flex; flex-direction:column; gap:6px;">
                 <sc-for list="{{ grp.items }}" as="it" hint-placeholder-count="3">
-                  <div style="display:flex; align-items:center; gap:7px;">
-                    <input type="color" defaultValue="{{ it.color }}" onChange="{{ it.onColor }}" onBlur="{{ it.onCommit }}" title="Colour" style="width:28px; height:28px; flex:none; padding:0; border:1px solid rgba(255,255,255,0.14); border-radius:7px; background:none; cursor:pointer;">
-                    <input defaultValue="{{ it.label }}" onChange="{{ it.onLabel }}" onBlur="{{ it.onCommit }}" style="flex:1; min-width:0; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:7px 9px; outline:none;">
-                    <sc-if value="{{ it.removable }}" hint-placeholder-val="{{ true }}">
-                      <button onClick="{{ it.onRemove }}" title="Remove" style="flex:none; width:28px; height:28px; border-radius:7px; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.26); color:#f0a6a6; cursor:pointer; font-size:14px; line-height:1;">×</button>
+                  <div style="display:flex; flex-direction:column; gap:5px;">
+                    <div style="display:flex; align-items:center; gap:7px;">
+                      <input type="color" defaultValue="{{ it.color }}" onChange="{{ it.onColor }}" onBlur="{{ it.onCommit }}" title="Colour" style="width:28px; height:28px; flex:none; padding:0; border:1px solid rgba(255,255,255,0.14); border-radius:7px; background:none; cursor:pointer;">
+                      <input defaultValue="{{ it.label }}" onChange="{{ it.onLabel }}" onBlur="{{ it.onCommit }}" style="flex:1; min-width:0; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:7px 9px; outline:none;">
+                      <sc-if value="{{ it.removable }}" hint-placeholder-val="{{ true }}">
+                        <button onClick="{{ it.onRemove }}" title="Remove" style="flex:none; width:28px; height:28px; border-radius:7px; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.26); color:#f0a6a6; cursor:pointer; font-size:14px; line-height:1;">×</button>
+                      </sc-if>
+                    </div>
+                    <sc-if value="{{ it.isTraveler }}" hint-placeholder-val="{{ false }}">
+                      <input defaultValue="{{ it.email }}" onChange="{{ it.onEmail }}" onBlur="{{ it.onCommit }}" type="email" placeholder="email (so you can share trips with them)" style="margin-left:35px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#bcd2e6; background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.09); border-radius:7px; padding:6px 9px; outline:none;">
                     </sc-if>
                   </div>
                 </sc-for>
@@ -780,8 +785,16 @@
             <button onClick="{{ setVisShared }}" style="{{ visSharedStyle }}">✉ Specific people</button>
           </div>
           <sc-if value="{{ visIsShared }}" hint-placeholder-val="{{ false }}">
-            <input name="sharedWithText" value="{{ form.sharedWithText }}" onChange="{{ onField }}" placeholder="email@example.com, another@example.com" style="width:100%; box-sizing:border-box; margin-top:9px; font-family:'Space Grotesk',sans-serif; font-size:13px; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(125,200,245,0.42); border-radius:10px; padding:10px 12px; outline:none;">
-            <div style="margin-top:6px; font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#586a82; line-height:1.5;">Comma-separated. They'll see this trip when signed in with that email.</div>
+            <div style="margin-top:10px; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#586a82; margin-bottom:7px;">PEOPLE</div>
+            <div style="display:flex; flex-wrap:wrap; gap:7px;">
+              <sc-for list="{{ shareTravelerChips }}" as="chip" hint-placeholder-count="4">
+                <button onClick="{{ chip.onToggle }}" disabled="{{ chip.disabled }}" title="{{ chip.title }}" style="{{ chip.style }}">{{ chip.label }}</button>
+              </sc-for>
+            </div>
+            <sc-if value="{{ hasTravelerNoEmail }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:7px; font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#caa34e; line-height:1.5;">Greyed names have no email yet — add one in ⚙ → Settings → Travelers to share with them.</div>
+            </sc-if>
+            <input name="sharedWithText" value="{{ form.sharedWithText }}" onChange="{{ onField }}" placeholder="+ other email (someone not in the list)" style="width:100%; box-sizing:border-box; margin-top:9px; font-family:'Space Grotesk',sans-serif; font-size:13px; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(125,200,245,0.42); border-radius:10px; padding:10px 12px; outline:none;">
           </sc-if>
         </sc-if>
 
@@ -819,7 +832,7 @@ class Component extends DCLogic {
     super(props);
     this.STORE = 'vacation-location:locations:v4';
     this.CFG = 'vacation-location:config';
-    this.APP_VERSION = '2.1';
+    this.APP_VERSION = '2.2';
     this.DEF_VISIT_TYPES = [
       { key:'natlpark', label:'National park', color:'#4ade80' },
       { key:'city', label:'City', color:'#38bdf8' },
@@ -1022,7 +1035,7 @@ class Component extends DCLogic {
     this.setImportInput = (el) => { this.importInput = el; };
   }
 
-  blankForm() { return { city:'', state:'', country:'', lat:'', lon:'', date:'', dateEnd:'', status:'planned', notes:'', visitTypes:[], tripTypes:['vacation'], travelers:[], createdAt:'', visibility:'private', sharedWith:[], sharedWithText:'' }; }
+  blankForm() { return { city:'', state:'', country:'', lat:'', lon:'', date:'', dateEnd:'', status:'planned', notes:'', visitTypes:[], tripTypes:['vacation'], travelers:[], createdAt:'', visibility:'private', sharedWith:[], sharedWithText:'', shareTravelers:[] }; }
 
   seed() {
     // [city, state, country, lon, lat, date, dateEnd, status, notes]
@@ -1725,6 +1738,7 @@ class Component extends DCLogic {
       const key = (o.key && String(o.key)) || o.label.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '') || ('item' + i);
       const item = { key, label: o.label.trim(), color: /^#[0-9a-f]{3,8}$/i.test(o.color) ? o.color : '#5fd3ff' };
       if (isStatus) item.short = (typeof o.short === 'string' && o.short.trim()) ? o.short.trim() : item.label;
+      if (typeof o.email === 'string' && o.email.trim()) item.email = o.email.trim().toLowerCase();
       out.push(item);
     });
     return out.length ? out : def.map(o => ({ ...o }));
@@ -2369,17 +2383,29 @@ class Component extends DCLogic {
   editSelected() {
     const loc = this.state.locations.find(l => l.id === this.state.selectedId);
     if (!loc) return;
-    this.setState({ formOpen: true, editingId: loc.id, dateText: null, dateEndText: null, formError: '', detailsOpen: this.state.cfgDetailsFormDefault, form: { ...this.blankForm(), ...loc, lat: loc.lat || '', lon: loc.lon || '', visitTypes: loc.visitTypes || [], tripTypes: loc.tripTypes || ['vacation'], travelers: loc.travelers || [], visibility: loc.visibility || 'private', sharedWith: loc.sharedWith || [], sharedWithText: (loc.sharedWith || []).join(', ') } });
+    // Split a stored email share list into traveler chips + leftover "other" emails.
+    const shared = (loc.sharedWith || []).map(e => String(e).toLowerCase());
+    const travByEmail = {};
+    (this.state.cfgTravelers || []).forEach(t => { if (t.email) travByEmail[t.email] = t.key; });
+    const shareTravelers = [], leftover = [];
+    shared.forEach(e => { if (travByEmail[e]) shareTravelers.push(travByEmail[e]); else leftover.push(e); });
+    this.setState({ formOpen: true, editingId: loc.id, dateText: null, dateEndText: null, formError: '', detailsOpen: this.state.cfgDetailsFormDefault, form: { ...this.blankForm(), ...loc, lat: loc.lat || '', lon: loc.lon || '', visitTypes: loc.visitTypes || [], tripTypes: loc.tripTypes || ['vacation'], travelers: loc.travelers || [], visibility: loc.visibility || 'private', sharedWith: loc.sharedWith || [], shareTravelers, sharedWithText: leftover.join(', ') } });
   }
 
   toggleDetails() { this.setState(s => ({ detailsOpen: !s.detailsOpen })); }
   setVisibility(v) { this.setState(s => ({ form: { ...s.form, visibility: v } })); }
+  toggleShareTraveler(key) {
+    this.setState(s => { const cur = s.form.shareTravelers || []; return { form: { ...s.form, shareTravelers: cur.includes(key) ? cur.filter(k => k !== key) : [...cur, key] } }; });
+  }
   // Card badges describing ownership + who can see a trip (cloud mode only).
   ownerBadge(l) {
     if (this.state.cfgDataSource !== 'cloud' || !l) return null;
     if (!l.owner) return { label: 'Unassigned', color: '#8093aa' };
-    if (l.owner === (this.state.cloudUserId || '')) return { label: 'You', color: '#7ee0a8' };
-    return { label: l.ownerEmail || 'Another user', color: '#9fb6cf' };
+    if (l.owner === (this.state.cloudUserId || '')) {
+      const myName = this.travelerNameByEmail(this.state.cloudUserEmail);
+      return { label: myName ? ('You · ' + myName) : 'You', color: '#7ee0a8' };
+    }
+    return { label: this.travelerNameByEmail(l.ownerEmail) || l.ownerEmail || 'Another user', color: '#9fb6cf' };
   }
   visBadge(l) {
     if (this.state.cfgDataSource !== 'cloud' || !l || !l.owner) return null;
@@ -2462,6 +2488,15 @@ class Component extends DCLogic {
     });
   }
   dataItemCommit() { this.bumpVersion(); }
+  dataItemEmail(key, email) {
+    this.setState(s => {
+      const list = s.cfgTravelers.map(o => o.key === key ? { ...o, email: String(email || '').trim().toLowerCase() } : o);
+      return this.persistConfigNoBump(s, { cfgTravelers: list });
+    });
+  }
+  // name↔email helpers for sharing & owner display
+  travelerEmail(key) { const t = (this.state.cfgTravelers || []).find(o => o.key === key); return t && t.email ? t.email : ''; }
+  travelerNameByEmail(email) { if (!email) return ''; const e = String(email).toLowerCase(); const t = (this.state.cfgTravelers || []).find(o => o.email && o.email === e); return t ? t.label : ''; }
   dataItemRemove(cat, key) {
     const lk = this._listKey(cat);
     this.setState(s => {
@@ -2631,11 +2666,13 @@ class Component extends DCLogic {
     // Normalize visibility + sharedWith (sharedWithText is the editable mirror).
     if (['private','shared','all'].indexOf(f.visibility) === -1) f.visibility = 'private';
     if (f.visibility === 'shared') {
-      f.sharedWith = String(f.sharedWithText || '').split(/[,;\n]/).map(x => x.trim().toLowerCase()).filter(Boolean);
+      const fromTravelers = (f.shareTravelers || []).map(k => this.travelerEmail(k)).filter(Boolean);
+      const fromText = String(f.sharedWithText || '').split(/[,;\n]/).map(x => x.trim().toLowerCase()).filter(Boolean);
+      f.sharedWith = [...new Set([...fromTravelers, ...fromText])];
     } else {
       f.sharedWith = [];
     }
-    delete f.sharedWithText;
+    delete f.sharedWithText; delete f.shareTravelers;
     // Stamp ownership (cloud identity if known; harmless in local mode).
     const meId = this.state.cloudUserId || '';
     const meEmail = this.state.cloudUserEmail || '';
@@ -2649,7 +2686,7 @@ class Component extends DCLogic {
     }
     this.persist(list);
     if (this.state.dupMode) {
-      const dup = { ...f, date: '', dateEnd: '', sharedWithText: (f.sharedWith || []).join(', ') };
+      const dup = { ...f, date: '', dateEnd: '', sharedWithText: (f.sharedWith || []).filter(e => !(this.state.cfgTravelers || []).some(t => t.email === e)).join(', '), shareTravelers: (this.state.form.shareTravelers || []) };
       delete dup.id; delete dup.createdAt; delete dup.modifiedAt;
       this.setState({ locations: list, formOpen: true, editingId: null, dateText: null, dateEndText: null, formError: '', selectedId: savedId, form: dup, calOpen: false });
     } else {
@@ -2819,6 +2856,9 @@ class Component extends DCLogic {
       title, cat,
       items: list.map(o => ({
         key: o.key, label: o.label, color: o.color,
+        isTraveler: cat === 'traveler',
+        email: o.email || '',
+        onEmail: (e) => this.dataItemEmail(o.key, e.target.value),
         onLabel: (e) => this.dataItemLabel(cat, o.key, e.target.value),
         onColor: (e) => this.dataItemColor(cat, o.key, e.target.value),
         onCommit: () => this.dataItemCommit(),
@@ -2931,6 +2971,20 @@ class Component extends DCLogic {
       setVisPrivate: () => this.setVisibility('private'),
       setVisAll: () => this.setVisibility('all'),
       setVisShared: () => this.setVisibility('shared'),
+      shareTravelerChips: (this.state.cfgTravelers || []).map(o => {
+        const sel = (form.shareTravelers || []).includes(o.key);
+        const hasEmail = !!o.email;
+        const me = this.state.cloudUserEmail && o.email === this.state.cloudUserEmail;
+        return {
+          key: o.key,
+          label: me ? (o.label + ' (you)') : o.label,
+          disabled: !hasEmail || me,
+          title: me ? "That's you — you always see your own trips" : (hasEmail ? ('Share with ' + (o.email)) : 'No email set for ' + o.label),
+          style: chipStyle(o.color, sel) + (!hasEmail || me ? 'opacity:0.4; cursor:not-allowed;' : ''),
+          onToggle: () => { if (hasEmail && !me) this.toggleShareTraveler(o.key); },
+        };
+      }),
+      hasTravelerNoEmail: (this.state.cfgTravelers || []).some(o => !o.email),
       detailsOpen: this.state.detailsOpen,
       detailsArrow: this.state.detailsOpen ? '▾' : '▸',
       toggleDetails: () => this.toggleDetails(),

@@ -2,7 +2,7 @@
 
 A dark, futuristic travel tracker built around a geographically accurate, rotating 3D globe. Plot every destination you've **visited**, have **planned**, or are still **dreaming** about — each pinned to the globe with colour‑coded markers, rich trip details, and flexible filtering.
 
-![Version](https://img.shields.io/badge/version-v2.1-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
+![Version](https://img.shields.io/badge/version-v2.2-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
 
 ---
 
@@ -70,7 +70,8 @@ In Cloud mode every trip belongs to whoever created it, and the server only ever
 - **Visibility per trip:** the add/edit form has a **"Who can see this"** picker:
   - **🔒 Only me** — private to you (default).
   - **👥 All users** — any signed-in user can view it.
-  - **✉ Specific people** — enter one or more emails; only those people (plus you) can view it.
+  - **✉ Specific people** — share **by name**: pick from your **Traveler** chips (Terry, Karen, …) instead of typing emails. Each Traveler can hold an optional email in **⚙ → Settings → Travelers**; that's the address access is granted to. Travelers without an email are greyed out with a hint. A **"+ other email"** box covers anyone who isn't a Traveler.
+- **Names, not emails:** because Travelers map names → emails, the owner badge and share picker show **names** ("Karen"), and when you're signed in with a Traveler's email the app greets you by that name. Sharing still resolves to emails under the hood (that's what sign-in matches on).
 - **You can only edit your own trips.** Trips shared with you are view-only (the detail card shows an owner badge, a visibility badge, and "Shared with you · view only" instead of Edit/Delete). A normal save never touches anyone else's data.
 - **Owner filter:** the left filter panel adds an **Owner** row — **Everyone** (all you can see) / **Mine** / **Shared with me** — and the globe follows the filter.
 - **Legacy trips** (created before this feature, with no owner) stay visible to everyone; an admin can re-own them via Import.
