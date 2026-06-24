@@ -19,7 +19,7 @@ A dark, futuristic travel tracker built around a geographically accurate, rotati
 - Add a destination with (in order): **country**, optional **state**, **city**, optional **latitude/longitude**, **date(s)**, **status**, **visit type(s)**, **trip type(s)**, **traveler(s)**, and free‑form **notes**.
 - **Status**: Planned (blue) · Visited (green) · Dream destination (purple).
 - **Trip type**: Personal · Work.
-- **Travelers**: Terry · Karen · Nikki · Amanda — multi‑select, each colour‑coded; shown on the detail card.
+- **Travelers**: Terry · [others] — multi‑select, each colour‑coded; shown on the detail card.
 - The destinations list shows each trip's **date range** on the same line as the country.
 - Click any saved location (on the globe or in the list) to view its detail card, then **Edit** or **Delete** it.
 - **Required fields:** every destination needs a **city**, a **date**, and a **status** (State is also required for U.S. cities). The `·required` hint clears automatically once a field has a value.
@@ -70,7 +70,7 @@ In Cloud mode every trip belongs to whoever created it, and the server only ever
 - **Visibility per trip:** the add/edit form has a **"Who can see this"** picker:
   - **🔒 Only me** — private to you (default).
   - **👥 All users** — any signed-in user can view it.
-  - **✉ Specific people** — share **by name**: pick from your **Traveler** chips (Terry, Karen, …) instead of typing emails. Each Traveler can hold an optional email in **⚙ → Settings → Travelers**; that's the address access is granted to. Travelers without an email are greyed out with a hint. A **"+ other email"** box covers anyone who isn't a Traveler.
+  - **✉ Specific people** — share **by name**: pick from your **Traveler** chips (Terry, …) instead of typing emails. Each Traveler can hold an optional email in **⚙ → Settings → Travelers**; that's the address access is granted to. Travelers without an email are greyed out with a hint. A **"+ other email"** box covers anyone who isn't a Traveler.
 - **Names, not emails:** because Travelers map names → emails, the owner badge and share picker show **names** ("Karen"), and when you're signed in with a Traveler's email the app greets you by that name. Sharing still resolves to emails under the hood (that's what sign-in matches on).
 - **Settings sync to the cloud:** editing configuration data (Travelers and their **emails**, visit/trip types, statuses, default filters, display options) saves to the cloud automatically a moment after you change it — so the name↔email mapping and your settings persist and are shared with other users, not just stored in your browser. (Requires the `editor`/`admin` role, like any cloud write.)
 - **You can only edit your own trips.** Trips shared with you are view-only (the detail card shows an owner badge, a visibility badge, and "Shared with you · view only" instead of Edit/Delete). A normal save never touches anyone else's data.
@@ -107,7 +107,7 @@ The app knows its own build version and quietly checks the server for a newer de
 
 ### 🧩 Configuration data (editable lists)
 The **Settings** tab turns what used to be fixed lists into editable data. For each category you can **rename**, **recolour** (colour swatch), **add**, and **remove** items; changes flow live into the Add/Edit form, the filters, the detail card, and the globe colours:
-- **Travelers** (e.g. Terry · Karen · Nikki · Amanda)
+- **Travelers** (e.g. Terry · [others])
 - **Trip types** (e.g. Personal · Work)
 - **Visit types** (e.g. National park · City · Family · Beach · Food & wine · Adventure · Road trip · Cultural)
 - **Statuses** (defaults: Planned · Visited · Dream) — fully editable: rename, recolour, **add**, and **remove**. The date‑driven auto‑select looks for `planned` / `visited` and simply skips if you've removed them; existing trips keep their stored status even if you delete it from the list.
