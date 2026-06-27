@@ -83,62 +83,61 @@ That's it — no rebuild needed. Your site can now read and save the trips data 
 
 ---
 
-## Step 3.5 — Set up Microsoft sign-in (one time)
+## Step 3.5 — Turn on sign-in (Microsoft, Google & Yahoo)
 
-This is what lets people log in with a Microsoft (or invited Google/email) account. You create a small “app registration” in Microsoft Entra and tell your site about it. Do this **once**.
+People log in with whatever account they already have — Microsoft, Google/Gmail, or Yahoo. You set each one up **once**. You do **not** invite anyone in Azure; who gets in is managed inside the app (Step 4).
 
-> **Your real address is `https://www.triptracking.org`** (the `www`). The plain `triptracking.org` just forwards to it, so **always use the `www` address** for sign-in and invites — never the bare apex.
+> **Your real address is `https://www.triptracking.org`** (the `www`). The bare `triptracking.org` just forwards to it, so **always use the `www` address** in redirect URIs — never the apex.
 
-**1. Find your Tenant ID.** Portal → search **Microsoft Entra ID** → **Overview** → copy the **Tenant ID** (a long GUID). Keep it handy.
+Each provider is the same shape: register an "app" on that provider, copy its **Client ID** + **Client secret**, paste them into your Static Web App's **Environment variables**. You can start with just one (Microsoft is easiest if you have a Microsoft account) and add the others later. The sign-in screen shows a button for each provider you've configured.
 
-**2. Register the app.** Entra ID → **App registrations** → **+ New registration**.
+### Microsoft (any Microsoft account)
+1. Portal → **Microsoft Entra ID** → **App registrations** → **+ New registration**.
    - **Name:** `Trip Tracker`
-   - **Supported account types:** **Accounts in this organizational directory only** (single tenant). Outside family/friends will be added as **guests** to your directory — they still work with this option.
-   - **Redirect URI:** choose **Web**, and enter:
-     `https://www.triptracking.org/.auth/login/aad/callback`
-   - Click **Register**. Copy the **Application (client) ID** from the Overview page.
+   - **Supported account types:** **Accounts in any organizational directory and personal Microsoft accounts** (this lets *any* Microsoft account sign in; your access list decides who actually gets in).
+   - **Redirect URI:** **Web** → `https://www.triptracking.org/.auth/login/aad/callback`
+   - **Register**, then copy the **Application (client) ID**.
+2. **Authentication** → **Add URI** → add `https://delightful-dune-0b6ba6d0f.7.azurestaticapps.net/.auth/login/aad/callback` (handy for testing) → **Save**.
+3. **Certificates & secrets** → **+ New client secret** → **Add** → copy the **Value** immediately.
+4. SWA → **Environment variables** → add `AAD_CLIENT_ID` (the client ID) and `AAD_CLIENT_SECRET` (the value).
 
-**3. Add the other redirect URIs.** In the registration → **Authentication** → **Add URI**, add (Web type):
-   - `https://delightful-dune-0b6ba6d0f.7.azurestaticapps.net/.auth/login/aad/callback`  *(the default address — handy for testing)*
-   - *(Skip the bare `triptracking.org` — it only forwards to `www`.)*
-   Click **Save**.
+> The issuer in `staticwebapp.config.json` is already `https://login.microsoftonline.com/common/v2.0` — that's what accepts any Microsoft account. Nothing to edit there.
 
-**4. Make a client secret.** Same registration → **Certificates & secrets** → **+ New client secret** → set an expiry → **Add**. **Copy the secret “Value” immediately** (you can't see it again later).
+### Google
+1. **console.cloud.google.com** → create/choose a project → **APIs & Services** → **Credentials** → **+ Create Credentials** → **OAuth client ID**.
+2. **Application type:** Web application. **Authorized redirect URI:** `https://www.triptracking.org/.auth/login/google/callback`. **Create**.
+3. Copy the **Client ID** and **Client secret**.
+4. SWA → **Environment variables** → add `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`.
 
-**5. Tell your site the three values.** Open `staticwebapp.config.json` in the repo and replace `REPLACE_WITH_YOUR_TENANT_ID` with your **Tenant ID** from step 1. Commit/push. Then in the Portal → your **Static Web App** → **Settings → Environment variables** → add two:
-   - `AAD_CLIENT_ID` = the **Application (client) ID** (step 2)
-   - `AAD_CLIENT_SECRET` = the secret **Value** (step 4)
-   Save. (A redeploy may take a couple of minutes to pick these up.)
+### Yahoo
+1. **developer.yahoo.com** → **My Apps** → **Create an App**.
+2. Choose **OpenID Connect** / Web Application. **Redirect URI:** `https://www.triptracking.org/.auth/login/yahoo/callback`. Request **email** + **profile** permissions.
+3. Copy the **Client ID** and **Client Secret**.
+4. SWA → **Environment variables** → add `YAHOO_CLIENT_ID` and `YAHOO_CLIENT_SECRET`.
 
-**6. Inviting outside family/friends (guests).** For anyone not already in your organization: Entra ID → **External Identities** → **Invite user** (or **Users → + New guest user**), enter their email, send. Gmail/other-email folks redeem with a one-time passcode. Once they're a guest, give them an app role in **Step 4**. (People already in your organization can skip straight to Step 4.)
+After saving env vars, a redeploy (a minute or two) picks them up.
 
 ---
 
-## Step 4 — Invite yourself so you can see the data
+## Step 4 — Give yourself (and others) access — managed inside the app
 
-Your data is **private**. Even you need to be given access. Here's how:
+There are **no Azure invitations**. Access is an **email→role list you edit right in the app**. Make yourself the first admin, then manage everyone from the app.
 
-1. Open your **Static Web App** → left menu → **Role management**.
-2. Click **+ Invite**.
-3. Fill in:
-   - **Authentication provider:** **Azure Active Directory** (a.k.a. Microsoft).
-   - **Invitee details:** your email.
-   - **Role:** type `admin` (this gives you full control — view, edit, import, clear).
-   - **Domain:** pick **`www.triptracking.org`** (your real address). **Do not** pick the bare `triptracking.org` — it only forwards to `www` and the invite will fail there.
-4. Click **Generate**, copy the **invite link**, open it in your browser, sign in, and **Accept**.
-5. Go to your site's URL → click **Sign in** → you should now see your data.
+**A. Make yourself the bootstrap admin (one time).** SWA → **Environment variables** → add `BOOTSTRAP_ADMIN_EMAIL` = the email you'll sign in with (you can list several, comma-separated). This email **always** has admin, so you can never lock yourself out. Save (wait a minute for the redeploy).
 
-**The three access levels** (assign whichever fits when inviting others):
+**B. Sign in.** Go to `https://www.triptracking.org`, click **Sign in**, pick your provider. You land in with full admin rights.
+
+**C. Manage everyone in the app.** Open **⚙ → System → Access list**. Add a row per person — their **email** + a **role** — and click **Save access list**. They can now sign in (Microsoft, Google, or Yahoo, using that email) and get the role you gave them. Remove a row to revoke access.
 
 | Role | What they can do |
 |------|------------------|
 | `reader` | View trips only |
 | `editor` | View + add / edit / delete trips |
-| `admin` | Everything, plus import & clear data |
+| `admin` | Everything, plus import, clear data, and manage the access list |
 
-> After changing someone's role, they must **sign out and back in** for it to take effect.
+> Roles are read **at sign-in**, so a change takes effect the next time that person signs in (have them sign out and back in if already logged in).
 
-**You're done!** The app is live, your data saves to the cloud, and only people you invite can see it. The steps below are optional extras.
+**You're done!** The app is live, data saves to the cloud, and only people on your access list can see it — no Azure portal invitations to manage.
 
 ---
 
@@ -247,14 +246,19 @@ swa start . --api-location api
 ```
 Without it, a plain local web server works too — the app just stays in Local mode.
 
-**Sign-in internals:** the app uses a **custom Microsoft Entra (Azure AD) registration** wired through `staticwebapp.config.json` (`auth.identityProviders.azureActiveDirectory`), which references the `AAD_CLIENT_ID` / `AAD_CLIENT_SECRET` app settings and your tenant issuer. Requires the **Standard** plan. The API is role-gated in the same file (`GET /api/trips` needs `reader`/`editor`; writes need `editor`). Anonymous visitors aren't blocked from loading the page — the app itself shows a “no access” message and the data API stays locked.
+**Sign-in internals:** the app offers **Microsoft, Google, and Yahoo** sign-in via custom provider registrations in `staticwebapp.config.json` (`auth.identityProviders`), each wired to `*_CLIENT_ID` / `*_CLIENT_SECRET` app settings. Roles are **not** assigned through Azure portal invitations — `auth.rolesSource` points at `/api/roles`, which looks each signed-in email up in an admin-managed allowlist (`access-list.json` in Blob Storage, edited in ⚙ → System → Access list) plus the `BOOTSTRAP_ADMIN_EMAIL` safety net, and returns `reader`/`editor`/`admin`. Requires the **Standard** plan. The data API is role-gated in the same file (`GET /api/trips` needs `reader`/`editor`; writes need `editor`; `/api/access` needs `admin`). Anonymous visitors aren't blocked from loading the page — the app shows a “no access” message and the API stays locked.
 
 **Environment variables reference:**
 
 | Variable | Required | Purpose |
 |----------|----------|---------|
-| `AAD_CLIENT_ID` | Yes (sign-in) | Entra app registration's Application (client) ID |
-| `AAD_CLIENT_SECRET` | Yes (sign-in) | Entra app registration's client secret value |
+| `AAD_CLIENT_ID` | For Microsoft sign-in | Microsoft Entra app registration's Application (client) ID |
+| `AAD_CLIENT_SECRET` | For Microsoft sign-in | Microsoft Entra app registration's client secret value |
+| `GOOGLE_CLIENT_ID` | For Google sign-in | Google OAuth client ID |
+| `GOOGLE_CLIENT_SECRET` | For Google sign-in | Google OAuth client secret |
+| `YAHOO_CLIENT_ID` | For Yahoo sign-in | Yahoo OAuth client ID |
+| `YAHOO_CLIENT_SECRET` | For Yahoo sign-in | Yahoo OAuth client secret |
+| `BOOTSTRAP_ADMIN_EMAIL` | Recommended | Email(s) that always get admin (comma-separated) — your lock-out safety net |
 | `AZURE_STORAGE_CONNECTION_STRING` | Yes | Where trips data is stored |
 | `TRIPS_CONTAINER` | No (default `data`) | Storage container name |
 | `TRIPS_BLOB` | No (default `trip-tracker.json`) | Data file name |

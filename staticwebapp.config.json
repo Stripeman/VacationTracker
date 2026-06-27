@@ -5,21 +5,45 @@
     "exclude": ["/api/*", "*.{json,js,css,png,jpg,svg,ico}"]
   },
   "auth": {
+    "rolesSource": "/api/roles",
     "identityProviders": {
       "azureActiveDirectory": {
         "registration": {
-          "openIdIssuer": "https://login.microsoftonline.com/b940252d-0297-4a5b-abfd-acdeb660b6c0/v2.0",
+          "openIdIssuer": "https://login.microsoftonline.com/common/v2.0",
           "clientIdSettingName": "AAD_CLIENT_ID",
           "clientSecretSettingName": "AAD_CLIENT_SECRET"
+        }
+      },
+      "google": {
+        "registration": {
+          "clientIdSettingName": "GOOGLE_CLIENT_ID",
+          "clientSecretSettingName": "GOOGLE_CLIENT_SECRET"
+        }
+      },
+      "customOpenIdConnectProviders": {
+        "yahoo": {
+          "registration": {
+            "clientIdSettingName": "YAHOO_CLIENT_ID",
+            "clientCredential": {
+              "clientSecretSettingName": "YAHOO_CLIENT_SECRET"
+            },
+            "openIdConnectConfiguration": {
+              "wellKnownOpenIdConfiguration": "https://api.login.yahoo.com/.well-known/openid-configuration"
+            }
+          },
+          "login": {
+            "nameClaimType": "email",
+            "scopes": ["openid", "email", "profile"]
+          }
         }
       }
     }
   },
   "routes": [
+    { "route": "/api/access", "allowedRoles": ["admin"] },
     { "route": "/api/trips", "methods": ["GET"], "allowedRoles": ["reader", "editor"] },
     { "route": "/api/trips", "methods": ["POST", "PUT"], "allowedRoles": ["editor"] },
-    { "route": "/api/presence", "methods": ["GET", "POST"], "allowedRoles": ["reader", "editor"] },
-    { "route": "/.auth/login/github", "statusCode": 404 }
+    { "route": "/api/presence", "methods": ["GET", "POST"], "allowedRoles": ["reader", "editor"] }
   ],
   "responseOverrides": {
     "401": { "statusCode": 401 }

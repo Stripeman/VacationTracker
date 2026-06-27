@@ -332,6 +332,31 @@
             </sc-if>
           </div>
         </sc-if>
+        <sc-if value="{{ showAccessAdmin }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-bottom:14px; background:rgba(56,189,248,0.05); border:1px solid rgba(56,189,248,0.2); border-radius:12px; padding:12px 13px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:5px;">
+              <span style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#7fb4d8;">ACCESS LIST</span>
+              <button onClick="{{ reloadAccess }}" disabled="{{ accessLoading }}" title="Reload from cloud" style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#9fb0c6; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.14); border-radius:7px; padding:4px 9px; cursor:pointer;">↻</button>
+            </div>
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#586a82; line-height:1.55; margin-bottom:11px;">Who may sign in, and what they can do. Anyone not listed gets a “no access” message. Email is matched across Microsoft / Google / Yahoo sign-in.</div>
+            <sc-for list="{{ accessRows }}" as="row" hint-placeholder-count="2">
+              <div style="display:flex; align-items:center; gap:6px; margin-bottom:7px;">
+                <input value="{{ row.email }}" onInput="{{ row.onEmail }}" type="email" placeholder="name@example.com" style="flex:1; min-width:0; font-family:'Space Grotesk',sans-serif; font-size:12px; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(125,200,245,0.32); border-radius:8px; padding:7px 9px; outline:none;">
+                <select value="{{ row.role }}" onChange="{{ row.onRole }}" style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#cfe6f5; background:rgba(13,21,34,0.96); border:1px solid rgba(255,255,255,0.14); border-radius:8px; padding:7px 6px; outline:none;">
+                  <option value="reader">reader</option>
+                  <option value="editor">editor</option>
+                  <option value="admin">admin</option>
+                </select>
+                <button onClick="{{ row.onRemove }}" title="Remove" style="flex:none; width:28px; height:31px; font-family:'IBM Plex Mono',monospace; font-size:14px; color:#f4a3a3; background:rgba(248,113,113,0.08); border:1px solid rgba(248,113,113,0.25); border-radius:8px; cursor:pointer;">×</button>
+              </div>
+            </sc-for>
+            <button onClick="{{ accessAddRow }}" style="width:100%; margin-top:3px; font-family:'Space Grotesk',sans-serif; font-size:12px; color:#cfe6f5; background:rgba(56,189,248,0.08); border:1px dashed rgba(56,189,248,0.3); border-radius:8px; padding:8px; cursor:pointer;">+ Add person</button>
+            <button onClick="{{ saveAccess }}" disabled="{{ accessSaving }}" style="width:100%; margin-top:8px; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; color:#04111e; background:linear-gradient(180deg,#5fd3ff,#22aee6); border:none; border-radius:9px; padding:9px; cursor:pointer;">{{ accessSaveLabel }}</button>
+            <sc-if value="{{ accessMsg }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:8px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:{{ accessMsgColor }}; line-height:1.5;">{{ accessMsg }}</div>
+            </sc-if>
+          </div>
+        </sc-if>
         <sc-if value="{{ needsReconnect }}" hint-placeholder-val="{{ false }}">
           <button onClick="{{ reconnectFile }}" style="width:100%; font-family:'Space Grotesk',sans-serif; font-size:13px; font-weight:600; color:#04111e; background:linear-gradient(180deg,#fcd34d,#fbbf24); border:none; border-radius:9px; padding:10px; cursor:pointer; margin-bottom:10px;">Reconnect file</button>
         </sc-if>
@@ -681,7 +706,16 @@
           <div style="width:46px; height:46px; margin:0 auto 16px; display:flex; align-items:center; justify-content:center; border-radius:12px; background:rgba(251,191,36,0.12); border:1px solid rgba(251,191,36,0.35); color:#fcd34d; font-size:22px;">🔒</div>
           <div style="font-family:'Orbitron',sans-serif; font-size:16px; letter-spacing:0.1em; color:#eaf4fd;">{{ cloudBlockTitle }}</div>
           <div style="font-family:'Space Grotesk',sans-serif; font-size:13.5px; line-height:1.6; color:#9fb0c6; margin-top:12px;">{{ cloudBlockMsg }}</div>
-          <a href="{{ cloudBlockHref }}" style="display:inline-block; margin-top:20px; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; color:#04111e; background:linear-gradient(180deg,#5fd3ff,#22aee6); border-radius:11px; padding:11px 22px; text-decoration:none;">{{ cloudBlockAction }}</a>
+          <sc-if value="{{ cloudDenied }}" hint-placeholder-val="{{ false }}">
+            <a href="/.auth/logout" style="display:inline-block; margin-top:20px; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; color:#04111e; background:linear-gradient(180deg,#5fd3ff,#22aee6); border-radius:11px; padding:11px 22px; text-decoration:none;">Sign out</a>
+          </sc-if>
+          <sc-if value="{{ cloudNeedsSignin }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex; flex-direction:column; gap:9px; margin-top:20px;">
+              <a href="/.auth/login/aad?post_login_redirect_uri=/" style="display:flex; align-items:center; justify-content:center; width:100%; box-sizing:border-box; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13.5px; color:#04111e; background:linear-gradient(180deg,#5fd3ff,#22aee6); border-radius:11px; padding:11px 16px; text-decoration:none;">Continue with Microsoft</a>
+              <a href="/.auth/login/google?post_login_redirect_uri=/" style="display:flex; align-items:center; justify-content:center; width:100%; box-sizing:border-box; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13.5px; color:#e6edf6; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.16); border-radius:11px; padding:11px 16px; text-decoration:none;">Continue with Google</a>
+              <a href="/.auth/login/yahoo?post_login_redirect_uri=/" style="display:flex; align-items:center; justify-content:center; width:100%; box-sizing:border-box; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13.5px; color:#e6edf6; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.16); border-radius:11px; padding:11px 16px; text-decoration:none;">Continue with Yahoo</a>
+            </div>
+          </sc-if>
           <div style="margin-top:16px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.08);">
             <sc-if value="{{ reqAccessOpen }}" hint-placeholder-val="{{ false }}">
               <sc-if value="{{ reqSent }}" hint-placeholder-val="{{ false }}">
@@ -949,7 +983,7 @@ class Component extends DCLogic {
     // --- storage keys + app version ---
     this.STORE = 'vacation-location:locations:v4'; // localStorage key: the trips array
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
-    this.APP_VERSION = '3.2';                       // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '3.3';                       // shown in ⓘ / help; compared against cloud to flag updates
     // --- reference data: the editable "data lists" (Settings tab can change these) ---
     // Each entry: { key (stable id), label (shown), color (chip + map) }.
     this.DEF_VISIT_TYPES = [
@@ -1083,6 +1117,11 @@ class Component extends DCLogic {
       cfgStatuses,
       cfgVersion,
       settingsTab: 'filters',
+      accessList: [],
+      accessLoading: false,
+      accessSaving: false,
+      accessMsg: '',
+      accessMsgOk: false,
       selectedId: null,
       formOpen: false,
       editingId: null,
@@ -2729,7 +2768,59 @@ class Component extends DCLogic {
   }
 
   // ---- Configuration (data) editor ----
-  setSettingsTab(tab) { this.setState({ settingsTab: tab }); }
+  setSettingsTab(tab) {
+    this.setState({ settingsTab: tab });
+    // Lazy-load the access list the first time an admin opens the System tab in cloud mode.
+    if (tab === 'storage' && this.state.cfgDataSource === 'cloud'
+        && (this.state.cloudRoles || []).includes('admin') && !this._accessLoaded) {
+      this.loadAccess();
+    }
+  }
+
+  // ACCESS LIST (admin): the email→role allowlist that /api/roles reads to grant access.
+  // Editing it here is how you let people in/out — no Azure portal invitations needed.
+  async loadAccess() {
+    if (this.state.accessLoading) return;
+    this.setState({ accessLoading: true, accessMsg: '' });
+    try {
+      const res = await fetch('/api/access', { cache: 'no-store' });
+      if (res.status === 401 || res.status === 403) { this.setState({ accessLoading: false, accessMsg: 'Admin role required to manage access.', accessMsgOk: false }); return; }
+      if (!res.ok) { this.setState({ accessLoading: false, accessMsg: 'Could not load (HTTP ' + res.status + ').', accessMsgOk: false }); return; }
+      const j = await res.json();
+      const list = Array.isArray(j.list) ? j.list.map(e => ({ email: String(e.email || ''), role: ['reader','editor','admin'].indexOf(e.role) >= 0 ? e.role : 'reader' })) : [];
+      this._accessLoaded = true;
+      this.setState({ accessLoading: false, accessList: list, accessMsg: '' });
+    } catch (e) {
+      this.setState({ accessLoading: false, accessMsg: 'Could not reach the cloud.', accessMsgOk: false });
+    }
+  }
+  accessAddRow() { this.setState(s => ({ accessList: [...s.accessList, { email: '', role: 'reader' }], accessMsg: '' })); }
+  accessSetEmail(i, v) { this.setState(s => { const a = s.accessList.slice(); a[i] = { ...a[i], email: v }; return { accessList: a }; }); }
+  accessSetRole(i, v) { this.setState(s => { const a = s.accessList.slice(); a[i] = { ...a[i], role: v }; return { accessList: a }; }); }
+  accessRemove(i) { this.setState(s => ({ accessList: s.accessList.filter((_, k) => k !== i) })); }
+  async saveAccess() {
+    if (this.state.accessSaving) return;
+    const seen = {};
+    const list = [];
+    for (const e of this.state.accessList) {
+      const email = String(e.email || '').trim().toLowerCase();
+      if (!email || email.indexOf('@') === -1) continue;
+      if (seen[email]) continue; seen[email] = 1;
+      list.push({ email, role: ['reader','editor','admin'].indexOf(e.role) >= 0 ? e.role : 'reader' });
+    }
+    this.setState({ accessSaving: true, accessMsg: '' });
+    try {
+      const res = await fetch('/api/access', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ list }) });
+      if (res.status === 401 || res.status === 403) { this.setState({ accessSaving: false, accessMsg: 'Admin role required.', accessMsgOk: false }); return; }
+      if (!res.ok) { this.setState({ accessSaving: false, accessMsg: 'Save failed (HTTP ' + res.status + ').', accessMsgOk: false }); return; }
+      const j = await res.json();
+      this._accessLoaded = true;
+      this.setState({ accessSaving: false, accessList: list, accessMsg: 'Saved — ' + (j.count != null ? j.count : list.length) + ' people. Changes take effect at their next sign-in.', accessMsgOk: true });
+    } catch (e) {
+      this.setState({ accessSaving: false, accessMsg: 'Could not reach the cloud.', accessMsgOk: false });
+    }
+  }
+
   _listKey(cat) { return { visit: 'cfgVisitTypes', trip: 'cfgTripTypes', traveler: 'cfgTravelers', status: 'cfgStatuses' }[cat]; }
   dataItemLabel(cat, key, label) {
     const lk = this._listKey(cat);
@@ -3433,6 +3524,21 @@ class Component extends DCLogic {
       canEditSelected,
       selectedReadOnly: !!selected && !canEditSelected && (this.state.cloudRoles || []).includes('editor'),
       canAdmin: this.state.cfgDataSource !== 'cloud' || (this.state.cloudRoles || []).includes('admin'),
+      showAccessAdmin: this.state.cfgDataSource === 'cloud' && (this.state.cloudRoles || []).includes('admin'),
+      accessRows: (this.state.accessList || []).map((r, i) => ({
+        email: r.email, role: r.role,
+        onEmail: (e) => this.accessSetEmail(i, e.target.value),
+        onRole: (e) => this.accessSetRole(i, e.target.value),
+        onRemove: () => this.accessRemove(i),
+      })),
+      accessAddRow: () => this.accessAddRow(),
+      saveAccess: () => this.saveAccess(),
+      reloadAccess: () => this.loadAccess(),
+      accessLoading: this.state.accessLoading,
+      accessSaving: this.state.accessSaving,
+      accessSaveLabel: this.state.accessSaving ? 'Saving…' : 'Save access list',
+      accessMsg: this.state.accessMsg,
+      accessMsgColor: this.state.accessMsgOk ? '#7ee0a8' : '#fcd34d',
       cloudBlocked: this.state.cfgDataSource === 'cloud' && (this.state.cloudState === 'anon' || this.state.cloudState === 'denied'),
       cloudBlockTitle: this.state.cloudState === 'denied' ? 'No access' : 'Sign in required',
       cloudBlockMsg: this.state.cloudState === 'denied'
@@ -3440,6 +3546,8 @@ class Component extends DCLogic {
         : 'This data is private. Sign in with an authorized account to view it, or request access below.',
       cloudBlockAction: this.state.cloudState === 'denied' ? 'Sign out' : 'Sign in',
       cloudBlockHref: this.state.cloudState === 'denied' ? '/.auth/logout' : '/.auth/login/aad',
+      cloudDenied: this.state.cloudState === 'denied',
+      cloudNeedsSignin: this.state.cloudState !== 'denied',
       cloudUseLocal: () => this.setDataSource('local'),
       accessEmail: this.state.cfgAccessEmail,
       hasAccessEmail: !!(this.state.cfgAccessEmail || '').trim(),
