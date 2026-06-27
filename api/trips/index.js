@@ -136,22 +136,44 @@ module.exports = async function (context, req) {
     const storedById = new Map(stored.locations.map((t) => [t.id, t]));
     const result = [];
 
-    // 1) keep every stored trip the caller cannot edit (legacy + other people's trips)
-    for (const t of stored.locations) {
-      if (!canEdit(t, me)) result.push(t);
-    }
-    // 2) take the caller's editable trips from the incoming working set
-    for (const t of payload.locations) {
-      const existing = storedById.get(t.id);
-      if (existing && !canEdit(existing, me)) continue;   // can't touch it — already kept above
-      const owner = existing && existing.owner ? existing.owner : me.id;
-      const ownerEmail = existing && existing.ownerEmail ? existing.ownerEmail : me.email;
+    // Reconcile the caller's working set against stored data:
+    //  - trips they OWN  → updated from payload (or deleted if omitted)
+    //  - other people's  → always kept untouched
+    //  - LEGACY (no owner): if the payload version carries owner==me.id the caller is
+    //    CLAIMING + editing it (stamp owner/ownerEmail, save all props); otherwise keep
+    //    the stored copy unchanged (legacy trips are never auto-dropped by a normal save).
+    const incomingById = new Map(payload.locations.map((t) => [t.id, t]));
+
+    const normalize = (t, owner, ownerEmail) => {
       let visibility = t.visibility;
       if (["private", "shared", "all"].indexOf(visibility) === -1) visibility = "private";
       const sharedWith = Array.isArray(t.sharedWith)
         ? t.sharedWith.map((s) => String(s).trim().toLowerCase()).filter(Boolean)
         : [];
-      result.push({ ...t, owner, ownerEmail, visibility, sharedWith });
+      return { ...t, owner, ownerEmail, visibility, sharedWith };
+    };
+
+    for (const s of stored.locations) {
+      const sOwner = s.owner || null;
+      const incoming = incomingById.get(s.id);
+      if (sOwner && sOwner !== me.id) {
+        result.push(s);                                   // someone else's — untouchable
+      } else if (sOwner === me.id) {
+        if (incoming) result.push(normalize(incoming, me.id, s.ownerEmail || me.email));
+        // omitted by an owner → deleted
+      } else {
+        // legacy / unowned
+        if (incoming && incoming.owner === me.id) {
+          result.push(normalize(incoming, me.id, me.email)); // claim + edit
+        } else {
+          result.push(s);                                  // keep legacy as-is
+        }
+      }
+    }
+    // brand-new trips the caller created this session
+    for (const t of payload.locations) {
+      if (storedById.has(t.id)) continue;
+      result.push(normalize(t, t.owner || me.id, t.ownerEmail || me.email));
     }
 
     const settings = payload.settings || stored.settings || null;
