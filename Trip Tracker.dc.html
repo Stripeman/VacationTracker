@@ -598,8 +598,31 @@
               </div>
             </sc-if>
           </div>
-          <button onClick="{{ deselect }}" style="flex:none; width:26px; height:26px; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#8093aa; cursor:pointer; font-size:15px; line-height:1;">×</button>
+          <div style="display:flex; align-items:center; gap:7px; flex:none;">
+            <sc-if value="{{ canPermSelected }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ togglePerm }}" title="Who can see this trip" style="{{ permBtnStyle }}">🔒</button>
+            </sc-if>
+            <button onClick="{{ deselect }}" style="flex:none; width:26px; height:26px; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#8093aa; cursor:pointer; font-size:15px; line-height:1;">×</button>
+          </div>
         </div>
+        <sc-if value="{{ permOpen }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:13px; background:rgba(56,189,248,0.06); border:1px solid rgba(56,189,248,0.22); border-radius:11px; padding:11px 12px;">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.16em; color:#7fb4d8; margin-bottom:8px;">WHO CAN SEE THIS</div>
+            <div style="display:flex; gap:6px;">
+              <button onClick="{{ setPermPrivate }}" style="{{ permVisPrivateStyle }}">Private</button>
+              <button onClick="{{ setPermAll }}" style="{{ permVisAllStyle }}">All users</button>
+              <button onClick="{{ setPermShared }}" style="{{ permVisSharedStyle }}">People</button>
+            </div>
+            <sc-if value="{{ permShowPeople }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:11px;">
+                <sc-for list="{{ permPeople }}" as="p" hint-placeholder-count="4">
+                  <button onClick="{{ p.onToggle }}" title="{{ p.title }}" style="{{ p.style }}">{{ p.letter }}</button>
+                </sc-for>
+              </div>
+            </sc-if>
+            <div style="margin-top:10px; font-family:'IBM Plex Mono',monospace; font-size:9px; color:#586a82; line-height:1.5;">Saved instantly · becomes the default for your next new trip.</div>
+          </div>
+        </sc-if>
         <div style="display:flex; gap:14px; margin-top:14px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#7d90a8;">
           <div><div style="color:#506075; font-size:9px; letter-spacing:0.12em;">{{ selected.coordsLabel }}</div><div style="margin-top:3px; color:#a9bace;">{{ selected.coordsText }}</div></div>
           <sc-if value="{{ selected.dateText }}" hint-placeholder-val="{{ false }}"><div><div style="color:#506075; font-size:9px; letter-spacing:0.12em;">DATES</div><div style="margin-top:3px; color:#a9bace;">{{ selected.dateText }}</div></div></sc-if>
@@ -983,7 +1006,7 @@ class Component extends DCLogic {
     // --- storage keys + app version ---
     this.STORE = 'vacation-location:locations:v4'; // localStorage key: the trips array
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
-    this.APP_VERSION = '3.3';                       // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '3.4';                       // shown in ⓘ / help; compared against cloud to flag updates
     // --- reference data: the editable "data lists" (Settings tab can change these) ---
     // Each entry: { key (stable id), label (shown), color (chip + map) }.
     this.DEF_VISIT_TYPES = [
@@ -1129,6 +1152,9 @@ class Component extends DCLogic {
       dateEndText: null,
       form: this.blankForm(),
       formError: '',
+      permOpen: false,
+      permVis: 'private',
+      permShareKeys: [],
       paneOpen: true,
       calOpen: false,
       calY: now.getFullYear(),
@@ -1214,7 +1240,12 @@ class Component extends DCLogic {
     this.setImportInput = (el) => { this.importInput = el; };
   }
 
-  blankForm() { return { city:'', state:'', country:'', lat:'', lon:'', date:'', dateEnd:'', status:'planned', notes:'', visitTypes:[], tripTypes:['vacation'], travelers:[], createdAt:'', visibility:'private', sharedWith:[], sharedWithText:'', shareTravelers:[] }; }
+  blankForm() {
+    // New trips inherit the last permission you chose via the card's quick editor.
+    const d = this._permDefault || {};
+    const vis = ['private','shared','all'].indexOf(d.vis) >= 0 ? d.vis : 'private';
+    const shareTravelers = Array.isArray(d.keys) ? d.keys.slice() : [];
+    return { city:'', state:'', country:'', lat:'', lon:'', date:'', dateEnd:'', status:'planned', notes:'', visitTypes:[], tripTypes:['vacation'], travelers:[], createdAt:'', visibility:vis, sharedWith:[], sharedWithText:'', shareTravelers }; }
 
   seed() {
     // [city, state, country, lon, lat, date, dateEnd, status, notes]
@@ -1867,7 +1898,7 @@ class Component extends DCLogic {
 
   selectLocation(id) {
     const loc = this.state.locations.find(l => l.id === id);
-    this.setState({ selectedId: id });
+    this.setState({ selectedId: id, permOpen: false });
     if (loc) {
       const c = this.resolveCoords(loc);
       if (c) {
@@ -2686,9 +2717,38 @@ class Component extends DCLogic {
   }
 
   toggleDetails() { this.setState(s => ({ detailsOpen: !s.detailsOpen })); }
-  setVisibility(v) { this.setState(s => ({ form: { ...s.form, visibility: v } })); }
-  toggleShareTraveler(key) {
+  setVisibility(v) { this.setState(s => ({ form: { ...s.form, visibility: v } })); }  toggleShareTraveler(key) {
     this.setState(s => { const cur = s.form.shareTravelers || []; return { form: { ...s.form, shareTravelers: cur.includes(key) ? cur.filter(k => k !== key) : [...cur, key] } }; });
+  }
+
+  // ---- quick per-trip permission editor (the lock button on the detail card) ----
+  togglePermPanel() {
+    this.setState(s => {
+      if (s.permOpen) return { permOpen: false };
+      const loc = (s.locations || []).find(l => l.id === s.selectedId);
+      if (!loc) return { permOpen: false };
+      const vis = ['private','shared','all'].indexOf(loc.visibility) >= 0 ? loc.visibility : 'private';
+      const emails = Array.isArray(loc.sharedWith) ? loc.sharedWith.map(e => String(e).toLowerCase()) : [];
+      const keys = (s.cfgTravelers || []).filter(t => t.email && emails.includes(String(t.email).toLowerCase())).map(t => t.key);
+      return { permOpen: true, permVis: vis, permShareKeys: keys };
+    });
+  }
+  setPermVis(v) { this.applyPerm(v, this.state.permShareKeys || []); }
+  togglePermShare(key) {
+    const cur = this.state.permShareKeys || [];
+    const keys = cur.includes(key) ? cur.filter(k => k !== key) : [...cur, key];
+    this.applyPerm(this.state.permVis || 'private', keys);
+  }
+  // Apply the chosen permission to the selected trip immediately (saves), and remember it
+  // as the default for the next NEW trip you create.
+  applyPerm(vis, keys) {
+    const id = this.state.selectedId;
+    if (id == null) return;
+    const emails = (vis === 'shared') ? [...new Set(keys.map(k => this.travelerEmail(k)).filter(Boolean))] : [];
+    const list = this.state.locations.map(l => l.id === id ? { ...l, visibility: vis, sharedWith: emails, modifiedAt: new Date().toISOString() } : l);
+    this._permDefault = { vis, keys: keys.slice() };
+    this.persist(list);
+    this.setState({ locations: list, permVis: vis, permShareKeys: keys });
   }
   // Card badges describing ownership + who can see a trip (cloud mode only).
   ownerBadge(l) {
@@ -2918,7 +2978,7 @@ class Component extends DCLogic {
     this.setState({ locations: list, selectedId: null, pendingTripDelete: null });
   }
 
-  deselect() { this.setState({ selectedId: null }); this.expandedKey = null; }
+  deselect() { this.setState({ selectedId: null, permOpen: false }); this.expandedKey = null; }
 
   togglePane() { this.setState(s => ({ paneOpen: !s.paneOpen })); }
 
@@ -3522,6 +3582,28 @@ class Component extends DCLogic {
         return { id: u.id, name: u.you ? (u.name + ' (you)') : u.name, color: u.you ? '#7ee0a8' : '#cfe0f0', title: (u.you ? 'You' : (u.email || u.name)) + ' · last online ' + rel };
       }),
       canEditSelected,
+      canPermSelected: this.state.cfgDataSource === 'cloud' && canEditSelected,
+      permOpen: this.state.permOpen,
+      togglePerm: () => this.togglePermPanel(),
+      permBtnStyle: 'flex:none; width:26px; height:26px; border-radius:8px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:12px; line-height:1; ' + (this.state.permOpen ? 'background:rgba(56,189,248,0.22); border:1px solid rgba(56,189,248,0.6); color:#bfeaff;' : 'background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.3); color:#7fd6f5;'),
+      permVisPrivateStyle: visSeg(this.state.permVis === 'private', '#9fb0c6'),
+      permVisAllStyle: visSeg(this.state.permVis === 'all', '#5fd3ff'),
+      permVisSharedStyle: visSeg(this.state.permVis === 'shared', '#fbbf24'),
+      setPermPrivate: () => this.setPermVis('private'),
+      setPermAll: () => this.setPermVis('all'),
+      setPermShared: () => this.setPermVis('shared'),
+      permShowPeople: this.state.permVis === 'shared',
+      permPeople: (this.state.cfgTravelers || []).map(o => {
+        const sel = (this.state.permShareKeys || []).includes(o.key);
+        const hasEmail = !!o.email;
+        const letter = String(o.label || '?').trim().charAt(0).toUpperCase();
+        const base = "width:30px; height:30px; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:13px; cursor:pointer; transition:all .15s; ";
+        const style = base + (sel
+          ? ('background:' + o.color + '; color:#06121d; border:2px solid ' + o.color + '; box-shadow:0 0 10px ' + o.color + '88;')
+          : ('background:rgba(255,255,255,0.04); color:' + o.color + '; border:1px solid ' + o.color + '66;'))
+          + (hasEmail ? '' : 'opacity:0.35; cursor:not-allowed;');
+        return { key: o.key, letter, title: o.label + (hasEmail ? ' · ' + o.email : ' · no email set'), style, onToggle: () => { if (hasEmail) this.togglePermShare(o.key); } };
+      }),
       selectedReadOnly: !!selected && !canEditSelected && (this.state.cloudRoles || []).includes('editor'),
       canAdmin: this.state.cfgDataSource !== 'cloud' || (this.state.cloudRoles || []).includes('admin'),
       showAccessAdmin: this.state.cfgDataSource === 'cloud' && (this.state.cloudRoles || []).includes('admin'),
