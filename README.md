@@ -94,6 +94,7 @@ The ⚙ **Configuration** panel has a left‑hand tab rail; **Defaults is select
 - **Status** — All / Visited
 - **Traveler** — **Auto (me)** / All / *(your travelers)*. **Auto (me)** is the default: when you're signed in, the list opens filtered to **your own** trips (matched by your email → Traveler), so each person lands on their own travels first. Set a specific traveler or All to override.
 - Ships defaulting to **Descending + Current year + Personal + Visited**; changing a default applies immediately and is carried in settings export/import.
+- **Themes** — a grid of **10 looks** (Aurora · Cobalt · Violet · Orchid · Magenta · Crimson · Ember · Amber · Emerald · Mono). Picking one instantly retints the **whole app** — globe, tiles, cards, modals and all — and is saved with your settings. Aurora is the default cyan.
 
 **Settings tab** — editable reference data (see *Configuration data* below).
 

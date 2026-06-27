@@ -45,7 +45,7 @@
 <script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </helmet>
-<div style="position:fixed; inset:0; font-family:'Space Grotesk',sans-serif; color:#c8d2e0; background:radial-gradient(circle at 50% 45%, #0a1422 0%, #05080f 55%, #03050a 100%);">
+<div ref="{{ setThemeRoot }}" style="position:fixed; inset:0; font-family:'Space Grotesk',sans-serif; color:#c8d2e0; background:radial-gradient(circle at 50% 45%, #0a1422 0%, #05080f 55%, #03050a 100%);">
 
   <canvas ref="{{ setCanvas }}" style="position:absolute; inset:0; width:100%; height:100%; display:block; cursor:grab; touch-action:none;"></canvas>
 
@@ -228,6 +228,22 @@
                 <button onClick="{{ seg.onSelect }}" style="{{ seg.style }}">{{ seg.label }}</button>
               </sc-for>
             </div>
+          </div>
+        </div>
+
+        <!-- THEMES: swatch grid; selected tile gets a ring + glow -->
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088; margin:18px 0 11px;">THEMES</div>
+        <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:13px;">
+          <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:8px;">
+            <sc-for list="{{ themeTiles }}" as="t" hint-placeholder-count="10">
+              <button onClick="{{ t.onSelect }}" style="{{ t.style }}">
+                <span style="{{ t.swatchStyle }}"></span>
+                <span style="flex:1; text-align:left; font-family:'Space Grotesk',sans-serif; font-size:12.5px;">{{ t.label }}</span>
+                <sc-if value="{{ t.on }}" hint-placeholder-val="{{ false }}">
+                  <span style="flex:none; font-size:12px; color:#5fd3ff;">✓</span>
+                </sc-if>
+              </button>
+            </sc-for>
           </div>
         </div>
         </sc-if>
@@ -751,7 +767,23 @@ class Component extends DCLogic {
     super(props);
     this.STORE = 'vacation-location:locations:v4';
     this.CFG = 'vacation-location:config';
-    this.APP_VERSION = '3.1';
+    this.APP_VERSION = '3.5';
+    // THEMES: 10 named looks. A single CSS `filter` on the root wrapper retints the
+    // whole app at once (tiles, cards, the <canvas> globe). hue-rotate spins the cyan
+    // accent around the wheel; saturate/brightness fine-tune. Uniform 3-function lists
+    // (Aurora = neutral) so there's no `none` keyword. swatch = picker representative.
+    this.THEMES = [
+      { key:'aurora',  label:'Aurora',  filter:'hue-rotate(0deg) saturate(1) brightness(1)',        swatch:'#38bdf8' },
+      { key:'cobalt',  label:'Cobalt',  filter:'hue-rotate(28deg) saturate(1.08) brightness(1)',     swatch:'#4c7bf5' },
+      { key:'violet',  label:'Violet',  filter:'hue-rotate(60deg) saturate(1.05) brightness(1)',      swatch:'#7b5cf5' },
+      { key:'orchid',  label:'Orchid',  filter:'hue-rotate(92deg) saturate(1.05) brightness(1)',      swatch:'#cf5cf0' },
+      { key:'magenta', label:'Magenta', filter:'hue-rotate(120deg) saturate(1.1) brightness(1)',      swatch:'#f55cc4' },
+      { key:'crimson', label:'Crimson', filter:'hue-rotate(150deg) saturate(1.15) brightness(1)',     swatch:'#f55c72' },
+      { key:'ember',   label:'Ember',   filter:'hue-rotate(178deg) saturate(1.2) brightness(1.05)',   swatch:'#f5814c' },
+      { key:'amber',   label:'Amber',   filter:'hue-rotate(206deg) saturate(1.12) brightness(1.04)',  swatch:'#f5c24c' },
+      { key:'emerald', label:'Emerald', filter:'hue-rotate(-30deg) saturate(1.05) brightness(1)',     swatch:'#4cf5b0' },
+      { key:'mono',    label:'Mono',    filter:'hue-rotate(0deg) saturate(0.2) brightness(1.04)',     swatch:'#9fb3c8' },
+    ];
     this.DEF_VISIT_TYPES = [
       { key:'natlpark', label:'National park', color:'#4ade80' },
       { key:'city', label:'City', color:'#38bdf8' },
@@ -827,6 +859,7 @@ class Component extends DCLogic {
     const cfgSpin = cfg.spin !== false;
     const cfgStateBorders = cfg.stateBorders === true;
     const cfgDefaultYear = cfg.defaultYear === 'all' ? 'all' : 'current';
+    const cfgTheme = (typeof cfg.theme === 'string' && this.THEMES.some(t => t.key === cfg.theme)) ? cfg.theme : 'aurora';
     // Editable data lists (fall back to built-in defaults), then refresh lookups.
     const cfgVisitTypes = this.sanitizeList(cfg.visitTypes, this.DEF_VISIT_TYPES);
     const cfgTripTypes = this.sanitizeList(cfg.tripTypes, this.DEF_TRIP_TYPES);
@@ -876,6 +909,7 @@ class Component extends DCLogic {
       filterTrip: cfgDefaultTrip === 'all' ? [] : [cfgDefaultTrip],
       filterTravelers: cfgDefaultTraveler === 'all' ? [] : [cfgDefaultTraveler],
       cfgDefaultYear,
+      cfgTheme,
       cfgDefaultTrip,
       cfgDefaultVisit,
       cfgDefaultStatus,
@@ -930,6 +964,7 @@ class Component extends DCLogic {
     this._pa = false;
 
     this.setCanvasRef = this.setCanvasRef.bind(this);
+    this.setThemeRoot = this.setThemeRoot.bind(this);
     this.onField = this.onField.bind(this);
     this.openAdd = this.openAdd.bind(this);
     this.closeForm = this.closeForm.bind(this);
@@ -1328,6 +1363,7 @@ class Component extends DCLogic {
     this._endCal = () => this.endCalDrag();
     window.addEventListener('pointerup', this._endCal);
     this._raf = requestAnimationFrame(this.loop);
+    this.applyTheme(this.state.cfgTheme);
   }
   componentWillUnmount() {
     cancelAnimationFrame(this._raf);
@@ -1370,6 +1406,18 @@ class Component extends DCLogic {
     return new Promise(res => {
       const t = setInterval(() => { if (cond()) { clearInterval(t); res(); } }, 40);
     });
+  }
+
+  // Theme: store the root wrapper element, then drive its CSS `filter` imperatively.
+  setThemeRoot(el) { if (el) { this.themeRootEl = el; this.applyTheme(this.state.cfgTheme); } }
+  applyTheme(key) {
+    const t = this.THEMES.find(x => x.key === key) || this.THEMES[0];
+    if (this.themeRootEl) this.themeRootEl.style.filter = t.filter;
+  }
+  setTheme(key) {
+    if (!this.THEMES.some(t => t.key === key)) return;
+    this.applyTheme(key);
+    this.setState(s => this.persistConfig(s, { cfgTheme: key }));
   }
 
   setCanvasRef(el) {
@@ -1921,7 +1969,7 @@ class Component extends DCLogic {
     return 'cloud';
   }
   cfgObject(s) {
-    return { version: s.cfgVersion, detailsFormDefault: s.cfgDetailsFormDefault, detailsCard: s.cfgDetailsCard, statusCard: s.cfgStatusCard, spin: s.cfgSpin, stateBorders: s.cfgStateBorders, defaultYear: s.cfgDefaultYear, defaultTrip: s.cfgDefaultTrip, defaultStatus: s.cfgDefaultStatus, defaultTraveler: s.cfgDefaultTraveler, defaultVisit: s.cfgDefaultVisit, sortDir: s.sortDir, dataSource: this.preservedDataSource(), visitTypes: s.cfgVisitTypes, tripTypes: s.cfgTripTypes, travelers: s.cfgTravelers, statuses: s.cfgStatuses };
+    return { version: s.cfgVersion, detailsFormDefault: s.cfgDetailsFormDefault, detailsCard: s.cfgDetailsCard, statusCard: s.cfgStatusCard, spin: s.cfgSpin, stateBorders: s.cfgStateBorders, theme: s.cfgTheme, defaultYear: s.cfgDefaultYear, defaultTrip: s.cfgDefaultTrip, defaultStatus: s.cfgDefaultStatus, defaultTraveler: s.cfgDefaultTraveler, defaultVisit: s.cfgDefaultVisit, sortDir: s.sortDir, dataSource: this.preservedDataSource(), visitTypes: s.cfgVisitTypes, tripTypes: s.cfgTripTypes, travelers: s.cfgTravelers, statuses: s.cfgStatuses };
   }
   // Central config write: bumps the version number and persists to localStorage.
   persistConfig(s, ns) {
@@ -2042,6 +2090,7 @@ class Component extends DCLogic {
       cfgStateBorders: settings.stateBorders === true,
       detailsOpen: settings.detailsFormDefault !== false,
       cfgDefaultYear: settings.defaultYear === 'all' ? 'all' : 'current',
+      cfgTheme: (typeof settings.theme === 'string' && this.THEMES.some(t => t.key === settings.theme)) ? settings.theme : ((this.state && this.state.cfgTheme) || 'aurora'),
       cfgDefaultTrip: (settings.defaultTrip === 'all' || tripKeys.includes(settings.defaultTrip)) ? settings.defaultTrip : (tripKeys.includes('vacation') ? 'vacation' : 'all'),
       cfgDefaultStatus: settings.defaultStatus === 'all' ? 'all' : 'visited',
       cfgDefaultTraveler: (settings.defaultTraveler === 'all' || travKeys.includes(settings.defaultTraveler)) ? settings.defaultTraveler : 'all',
@@ -2786,6 +2835,19 @@ class Component extends DCLogic {
       cfgStateBordersStyle: cfgPill(this.state.cfgStateBorders),
       cfgStateBordersLabel: this.state.cfgStateBorders ? 'ON' : 'OFF',
       toggleStateBorders: () => this.toggleStateBorders(),
+      themeTiles: this.THEMES.map(t => {
+        const on = this.state.cfgTheme === t.key;
+        return {
+          key: t.key, label: t.label, swatch: t.swatch, on,
+          onSelect: () => this.setTheme(t.key),
+          swatchStyle: 'width:18px; height:18px; flex:none; border-radius:6px; background:#38bdf8; box-shadow:0 0 0 1px rgba(255,255,255,0.18) inset; filter:' + t.filter + ';',
+          style: 'display:flex; align-items:center; gap:9px; padding:9px 11px; border-radius:10px; cursor:pointer; transition:all .15s; color:' +
+            (on ? '#eaf6ff' : '#c6d3e2') + '; background:' +
+            (on ? 'rgba(95,211,255,0.12)' : 'rgba(255,255,255,0.03)') +
+            '; border:1px solid ' + (on ? '#5fd3ff' : 'rgba(255,255,255,0.1)') +
+            (on ? '; box-shadow:0 0 14px rgba(95,211,255,0.22)' : '') + ';',
+        };
+      }),
       defYearSeg: [
         { label: 'All years', style: segStyle(this.state.cfgDefaultYear === 'all', '#5fd3ff'), onSelect: () => this.setDefaultFilter('cfgDefaultYear', 'all') },
         { label: 'Current year', style: segStyle(this.state.cfgDefaultYear === 'current', '#5fd3ff'), onSelect: () => this.setDefaultFilter('cfgDefaultYear', 'current') },
@@ -2974,6 +3036,7 @@ class Component extends DCLogic {
       statusDream: () => this.setStatus('dream'),
       statusFormChips,
       setCanvas: this.setCanvasRef,
+      setThemeRoot: this.setThemeRoot,
     };
   }
 }
