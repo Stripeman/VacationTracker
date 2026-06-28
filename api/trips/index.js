@@ -155,6 +155,30 @@ module.exports = async function (context, req) {
       return;
     }
 
+    // Admin-only delete-user — removes a person's footprint across ALL trips safely.
+    // Body: { email, key, deleteTrips }
+    //   deleteTrips:true  → delete every trip owned by this email
+    //   deleteTrips:false → keep those trips but unassign them (owner cleared)
+    //   always            → strip this person's traveler key from every trip (disassociate)
+    if (mode === "deleteUser") {
+      if (!me.roles.includes("admin")) { json(403, { error: "Admin role required to delete a user." }); return; }
+      const em = String(payload.email || "").toLowerCase().trim();
+      const key = payload.key || "";
+      const deleteTrips = !!payload.deleteTrips;
+      const stored = await readDataset(blob);
+      let out = stored.locations;
+      if (deleteTrips && em) out = out.filter((t) => String(t.ownerEmail || "").toLowerCase().trim() !== em);
+      out = out.map((t) => {
+        let n = t;
+        if (key && Array.isArray(t.travelers) && t.travelers.indexOf(key) !== -1) n = { ...n, travelers: t.travelers.filter((k) => k !== key) };
+        if (em && String((n.ownerEmail || "")).toLowerCase().trim() === em) n = { ...n, ownerEmail: "", owner: "" };
+        return n;
+      });
+      await writeDataset(blob, out, stored.settings);
+      json(200, { ok: true, mode: "deleteUser", remaining: out.length });
+      return;
+    }
+
     // Admin-only full replace — used by Import and Clear data.
     if (mode === "replace") {
       if (!me.roles.includes("admin")) { json(403, { error: "Admin role required to replace all data." }); return; }

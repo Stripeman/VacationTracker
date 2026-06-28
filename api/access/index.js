@@ -79,7 +79,7 @@ module.exports = async function (context, req) {
       if (VALID.indexOf(role) === -1) role = "reader";
       if (seen.has(email)) continue;
       seen.add(email);
-      const row = { email, role };
+      const row = { email, role, active: e.active !== false };
       if (e.name && String(e.name).trim()) row.name = String(e.name).trim();
       clean.push(row);
     }

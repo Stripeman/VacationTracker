@@ -65,7 +65,8 @@ module.exports = async function (context, req) {
   try {
     const list = await readAccessList();
     const hit = list.find((e) => e && String(e.email || "").toLowerCase().trim() === email);
-    if (hit) rolesFor(hit.role).forEach((r) => roles.add(r));
+    // An entry marked active:false is suspended — keep the record but grant no roles.
+    if (hit && hit.active !== false) rolesFor(hit.role).forEach((r) => roles.add(r));
   } catch (e) {
     context.log.error(e);
   }
