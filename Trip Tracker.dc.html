@@ -1192,6 +1192,7 @@
               <div style="display:flex; gap:3px; padding:3px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:9px;">
                 <button onClick="{{ showAppGuide }}" style="{{ appGuideTabStyle }}">App guide</button>
                 <button onClick="{{ showDeployGuide }}" style="{{ deployGuideTabStyle }}">Deploy guide</button>
+                <button onClick="{{ showChangelog }}" style="{{ changelogTabStyle }}">Changelog</button>
               </div>
               <a href="{{ helpPageHref }}" target="_blank" rel="noopener" title="Open this guide in its own page — shareable by link, and printable to PDF" style="display:flex; align-items:center; gap:5px; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.04em; color:#cfe6f5; background:rgba(255,255,255,0.05); border:1px solid rgba(56,189,248,0.28); border-radius:8px; padding:6px 10px; cursor:pointer; text-decoration:none;">↗ Open / PDF</a>
               <button onClick="{{ closeHelp }}" style="width:28px; height:28px; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#8093aa; cursor:pointer; font-size:16px; line-height:1;">×</button>
@@ -3067,8 +3068,9 @@ class Component extends DCLogic {
   openHelp() { this.setState({ helpOpen: true }); this.loadHelpDoc('readme'); }
   showAppGuide() { this.loadHelpDoc('readme'); }
   showDeployGuide() { this.loadHelpDoc('deploy'); }
+  showChangelog() { this.loadHelpDoc('changelog'); }
   async loadHelpDoc(which) {
-    const file = which === 'deploy' ? 'DEPLOY-azure.md' : 'README.md';
+    const file = which === 'deploy' ? 'DEPLOY-azure.md' : (which === 'changelog' ? 'CHANGELOG.md' : 'README.md');
     this._docCache = this._docCache || {};
     if (this._docCache[which]) { this.setState({ helpDoc: which, helpHtml: this._docCache[which], helpError: '' }); return; }
     this.setState({ helpDoc: which, helpHtml: '', helpError: '' });
@@ -4698,8 +4700,10 @@ class Component extends DCLogic {
       closeHelp: () => this.closeHelp(),
       showAppGuide: () => this.showAppGuide(),
       showDeployGuide: () => this.showDeployGuide(),
-      appGuideTabStyle: helpTabStyle(this.state.helpDoc !== 'deploy'),
+      showChangelog: () => this.showChangelog(),
+      appGuideTabStyle: helpTabStyle(this.state.helpDoc !== 'deploy' && this.state.helpDoc !== 'changelog'),
       deployGuideTabStyle: helpTabStyle(this.state.helpDoc === 'deploy'),
+      changelogTabStyle: helpTabStyle(this.state.helpDoc === 'changelog'),
       stopProp: (e) => e.stopPropagation(),
       stop: (e) => { e.stopPropagation(); },
       helpNode: this.state.helpHtml ? React.createElement('div', { className: 'vl-help', dangerouslySetInnerHTML: { __html: this.state.helpHtml } }) : null,

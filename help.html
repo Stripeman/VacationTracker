@@ -95,6 +95,7 @@
         <div class="tabs">
           <button class="tab active" id="tab-readme" onclick="loadDoc('readme')">App guide</button>
           <button class="tab" id="tab-deploy" onclick="loadDoc('deploy')">Deploy guide</button>
+          <button class="tab" id="tab-changelog" onclick="loadDoc('changelog')">Changelog</button>
         </div>
         <button class="btn" onclick="window.print()" title="Print or save as PDF">⤓&nbsp;Save&nbsp;PDF</button>
       </div>
@@ -104,13 +105,14 @@
   </div>
 
   <script>
-    var FILES = { readme: 'README.md', deploy: 'DEPLOY-azure.md' };
-    var TITLES = { readme: 'App guide', deploy: 'Deploy guide' };
+    var FILES = { readme: 'README.md', deploy: 'DEPLOY-azure.md', changelog: 'CHANGELOG.md' };
+    var TITLES = { readme: 'App guide', deploy: 'Deploy guide', changelog: 'Changelog' };
     var cache = {};
 
     function setActiveTab(which) {
       document.getElementById('tab-readme').classList.toggle('active', which === 'readme');
       document.getElementById('tab-deploy').classList.toggle('active', which === 'deploy');
+      document.getElementById('tab-changelog').classList.toggle('active', which === 'changelog');
       document.title = 'Trip Tracker — ' + TITLES[which];
     }
 
@@ -140,7 +142,8 @@
       }
     }
 
-    var start = (new URLSearchParams(location.search).get('doc') === 'deploy') ? 'deploy' : 'readme';
+    var startDoc = new URLSearchParams(location.search).get('doc');
+    var start = (startDoc === 'deploy' || startDoc === 'changelog') ? startDoc : 'readme';
     loadDoc(start);
   </script>
 </body>
