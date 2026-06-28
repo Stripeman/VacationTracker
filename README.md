@@ -67,7 +67,7 @@ A dark, futuristic travel tracker built around a geographically accurate, rotati
 - **Clear data** always downloads a dated backup first.
 
 ### 👤 Per-user data & sharing (Cloud mode)
-In Cloud mode every trip belongs to whoever created it, and the server only ever sends each person the trips they're allowed to see — privacy is enforced on the server, not just hidden in the browser.
+In Cloud mode every trip belongs to whoever created it — ownership is resolved by **email**, so an admin can hand a trip to any user even before that user's first sign‑in. The server only ever sends each person the trips they're allowed to see — privacy is enforced on the server, not just hidden in the browser.
 - **Who's signed in:** **⚙ → System → Cloud sync** shows your account (avatar, email, and your role — `reader` / `editor` / `admin`) with a **Sign out** button.
 - **Visibility per trip:** the add/edit form has a **"Who can see this"** picker:
   - **🔒 Only me** — private to you (default).
@@ -85,8 +85,8 @@ In Cloud mode every trip belongs to whoever created it, and the server only ever
 - **Who's online:** a thin bar at the bottom-right shows the names of everyone signed in right now (green dot + name; "you" highlighted). Hover a name to see when they were last active. Each browser quietly sends a heartbeat every ~30s and is shown as online for up to ~90s after — so it reflects "active in the last minute or so," not instant presence. Only signed-in users see it, and it's Cloud-mode only.
 - **Login analytics (admin):** in **⚙ → System → Access list**, an admin can **hover any person's row** to see a stat bubble — whether they've actually signed in, their **total login count**, **last login**, and **how many trips they've logged**. The bubble appears to the *bottom-left* of the cursor so it never blocks the email field. Login counts are recorded server-side (one count per page-load); trip totals are read from the dataset, so they're accurate even for trips you can't see.
 
-### ⚙ Configuration — four tabs
-The ⚙ **Configuration** panel has a tab row across the top — **Settings · Users · Preferences · System** — with **Settings selected by default**. The **ⓘ** button drops a panel (under the tabs) with the author, build version, last‑updated date, and a link to the **GitHub repository**.
+### ⚙ Configuration — tabs
+The ⚙ **Configuration** panel has a tab row across the top — **Settings · Preferences · Users · System** (plus a **Trips** tab for admins in Cloud mode) — with **Settings selected by default**. The **ⓘ** button drops a panel (under the tabs) with the author, build version, last‑updated date, and a link to the **GitHub repository**.
 
 **Settings tab** — first, what the filters open to on each visit (colour‑coded segmented toggles that match the filter colours), then the editable reference lists (Trip types, Visit types, Statuses — see *Configuration data* below):
 - **Sort destinations** — Descending (newest first) / Ascending (oldest first)
@@ -98,7 +98,9 @@ The ⚙ **Configuration** panel has a tab row across the top — **Settings · U
 - Ships defaulting to **Descending + Current year + Personal + Visited**; changing a default applies immediately and is carried in settings export/import.
 - **Themes** — a grid of **10 looks** (Aurora · Cobalt · Violet · Orchid · Magenta · Crimson · Ember · Amber · Emerald · Mono). Picking one instantly retints the **whole app** — globe, tiles, cards, modals and all — and is saved with your settings. Aurora is the default cyan.
 
-**Users tab** — the unified **People** list (everyone you can tag on a trip). Each person always has a **name + colour**; an **email is optional** — give someone an email and they can sign in, at which point a **role** and a **presence dot** appear. People without an email are simply names you can pick. Each row has an **Edit** button (so you can't fat‑finger an email just by clicking a field), and **+ Add person** at the top. In Cloud mode an **admin** sets emails and roles (Reader / Editor / Admin, cumulative); a regular **editor** can add name‑only people under themselves and can delete **only** people they added that aren't tagged on any trip. The Users tab is hidden for read‑only (`reader`) accounts.
+**Users tab** — the unified **People** list (everyone you can tag on a trip). Each person always has a **name + colour**; an **email is optional** — give someone an email and they can sign in, at which point a **role** and a **presence dot** appear. People without an email are simply names you can pick. Each row has an **Edit** button (so you can't fat‑finger an email just by clicking a field), and **+ Add person** at the top. In Cloud mode an **admin** sets emails and roles (Reader / Editor / Admin, cumulative) and, for a name‑only person, an **Owned by** parent user; a regular **editor** can add name‑only people under themselves and can delete **only** people they added that aren't tagged on any trip. The Users tab is hidden for read‑only (`reader`) accounts.
+
+**Trips tab** (admin, Cloud) — **Trip Management**. New trips are owned by their creator automatically; this tab lists any older trips that still have **no owner** and lets an admin **assign each to a person** from a dropdown, or **claim them all** at once. Assigning is by email, so the trip becomes that user's the next time they load — no re‑import needed.
 
 **Preferences tab** — display options:
 - Toggle whether the **Trip details** section is open by default on the form.

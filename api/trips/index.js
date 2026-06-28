@@ -33,9 +33,20 @@ function principal(req) {
   }
 }
 
+function sameEmail(a, b) {
+  a = String(a || "").toLowerCase().trim();
+  b = String(b || "").toLowerCase().trim();
+  return !!a && a === b;
+}
+
+// A trip is "mine" if I created it (owner id) OR my email is its ownerEmail (assigned).
+function isMine(trip, me) {
+  return !!(trip && ((trip.owner && trip.owner === me.id) || sameEmail(trip.ownerEmail, me.email)));
+}
+
 function canView(trip, me) {
-  if (!trip || !trip.owner) return true;            // legacy / unowned → visible to all
-  if (trip.owner === me.id) return true;            // your own
+  if (!trip || (!trip.owner && !trip.ownerEmail)) return true; // legacy / unassigned → visible to all
+  if (isMine(trip, me)) return true;                // your own / assigned to you
   if (trip.visibility === "all") return true;       // shared with all users
   if (trip.visibility === "shared" && Array.isArray(trip.sharedWith)) {
     if (trip.sharedWith.map((s) => String(s).toLowerCase()).includes(me.email)) return true;
@@ -43,10 +54,11 @@ function canView(trip, me) {
   return false;
 }
 
-// Normal saves may only create/modify/delete trips the caller OWNS. Legacy (unowned)
-// and other people's trips are never touched by a normal save (admins use ?mode=replace).
+// Normal saves may only create/modify/delete trips the caller OWNS (by id or assigned
+// email). Legacy/unassigned and other people's trips are never touched by a normal save
+// (admins use ?mode=replace or ?mode=assign).
 function canEdit(trip, me) {
-  return !!(trip && trip.owner && trip.owner === me.id);
+  return isMine(trip, me);
 }
 
 async function getContainer() {
@@ -122,6 +134,27 @@ module.exports = async function (context, req) {
 
     const mode = (req.query && req.query.mode) || "";
 
+    // Admin-only single/bulk owner assignment — used by the Trip Management tab. Sets
+    // ownerEmail on the targeted trips in the STORED dataset (never touches other trips,
+    // so it's safe even though the admin's own GET is filtered). Body:
+    //   { ownerEmail, ids: [...] }  → assign those trip ids
+    //   { ownerEmail }              → assign ALL currently-unassigned (no ownerEmail) trips
+    if (mode === "assign") {
+      if (!me.roles.includes("admin")) { json(403, { error: "Admin role required to assign owners." }); return; }
+      const em = String(payload.ownerEmail || "").toLowerCase().trim();
+      const ids = Array.isArray(payload.ids) ? payload.ids : (payload.id != null ? [payload.id] : null);
+      const stored = await readDataset(blob);
+      let n = 0;
+      const out = stored.locations.map((t) => {
+        const target = ids ? ids.indexOf(t.id) !== -1 : !t.ownerEmail;
+        if (target) { n++; return { ...t, ownerEmail: em }; }
+        return t;
+      });
+      await writeDataset(blob, out, stored.settings);
+      json(200, { ok: true, mode: "assign", assigned: n, ownerEmail: em });
+      return;
+    }
+
     // Admin-only full replace — used by Import and Clear data.
     if (mode === "replace") {
       if (!me.roles.includes("admin")) { json(403, { error: "Admin role required to replace all data." }); return; }
@@ -154,16 +187,17 @@ module.exports = async function (context, req) {
     };
 
     for (const s of stored.locations) {
-      const sOwner = s.owner || null;
       const incoming = incomingById.get(s.id);
-      if (sOwner && sOwner !== me.id) {
-        result.push(s);                                   // someone else's — untouchable
-      } else if (sOwner === me.id) {
-        if (incoming) result.push(normalize(incoming, me.id, s.ownerEmail || me.email));
-        // omitted by an owner → deleted
+      if (s.owner || s.ownerEmail) {
+        if (isMine(s, me)) {
+          if (incoming) result.push(normalize(incoming, s.owner || me.id, s.ownerEmail || me.email));
+          // omitted by an owner → deleted
+        } else {
+          result.push(s);                                  // someone else's — untouchable
+        }
       } else {
-        // legacy / unowned
-        if (incoming && incoming.owner === me.id) {
+        // legacy / unassigned
+        if (incoming && isMine(incoming, me)) {
           result.push(normalize(incoming, me.id, me.email)); // claim + edit
         } else {
           result.push(s);                                  // keep legacy as-is

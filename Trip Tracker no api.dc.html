@@ -2152,7 +2152,7 @@ class Component extends DCLogic {
       const res = await fetch(location.pathname + '?_v=' + Date.now(), { cache: 'no-store' });
       if (!res.ok) return;
       const txt = await res.text();
-      const m = txt.match(/APP_VERSION\s*=\s*['"]([0-9][0-9.]*)['"]/);
+      const m = txt.match(/APP_VERSION\s*=\s*['"]([0-9][0-9A-Za-z.+\-]*)['"]/);
       if (!m) return;
       if (this.cmpVer(m[1], this.APP_VERSION) > 0) this.setState({ updateAvailable: true, latestVersion: m[1] });
     } catch (e) {}
