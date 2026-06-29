@@ -447,31 +447,6 @@
             </sc-if>
           </div>
         </sc-if>
-        <sc-if value="{{ showAccessAdmin }}" hint-placeholder-val="{{ false }}">
-          <div style="margin-bottom:14px; background:rgba(56,189,248,0.05); border:1px solid rgba(56,189,248,0.2); border-radius:12px; padding:12px 13px;">
-            <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:5px;">
-              <span style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#7fb4d8;">ACCESS LIST</span>
-              <button onClick="{{ reloadAccess }}" disabled="{{ accessLoading }}" title="Reload from cloud" style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#9fb0c6; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.14); border-radius:7px; padding:4px 9px; cursor:pointer;">↻</button>
-            </div>
-            <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#586a82; line-height:1.55; margin-bottom:11px;">Who may sign in, and what they can do. Anyone not listed gets a “no access” message. Email is matched across Microsoft / Google / Yahoo sign-in.</div>
-            <sc-for list="{{ accessRows }}" as="row" hint-placeholder-count="2">
-              <div onMouseMove="{{ row.onHover }}" onMouseLeave="{{ hideStat }}" style="display:flex; align-items:center; gap:6px; margin-bottom:7px;">
-                <input value="{{ row.email }}" onInput="{{ row.onEmail }}" type="email" placeholder="name@example.com" style="flex:1; min-width:0; font-family:'Space Grotesk',sans-serif; font-size:12px; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(125,200,245,0.32); border-radius:8px; padding:7px 9px; outline:none;">
-                <select value="{{ row.role }}" onChange="{{ row.onRole }}" style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#cfe6f5; background:rgba(13,21,34,0.96); border:1px solid rgba(255,255,255,0.14); border-radius:8px; padding:7px 6px; outline:none;">
-                  <option value="reader">reader</option>
-                  <option value="editor">editor</option>
-                  <option value="admin">admin</option>
-                </select>
-                <button onClick="{{ row.onRemove }}" title="Remove" style="flex:none; width:28px; height:31px; font-family:'IBM Plex Mono',monospace; font-size:14px; color:#f4a3a3; background:rgba(248,113,113,0.08); border:1px solid rgba(248,113,113,0.25); border-radius:8px; cursor:pointer;">×</button>
-              </div>
-            </sc-for>
-            <button onClick="{{ accessAddRow }}" style="width:100%; margin-top:3px; font-family:'Space Grotesk',sans-serif; font-size:12px; color:#cfe6f5; background:rgba(56,189,248,0.08); border:1px dashed rgba(56,189,248,0.3); border-radius:8px; padding:8px; cursor:pointer;">+ Add person</button>
-            <button onClick="{{ saveAccess }}" disabled="{{ accessSaving }}" style="width:100%; margin-top:8px; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; color:#04111e; background:linear-gradient(180deg,#5fd3ff,#22aee6); border:none; border-radius:9px; padding:9px; cursor:pointer;">{{ accessSaveLabel }}</button>
-            <sc-if value="{{ accessMsg }}" hint-placeholder-val="{{ false }}">
-              <div style="margin-top:8px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:{{ accessMsgColor }}; line-height:1.5;">{{ accessMsg }}</div>
-            </sc-if>
-          </div>
-        </sc-if>
         <sc-if value="{{ needsReconnect }}" hint-placeholder-val="{{ false }}">
           <button onClick="{{ reconnectFile }}" style="width:100%; font-family:'Space Grotesk',sans-serif; font-size:13px; font-weight:600; color:#04111e; background:linear-gradient(180deg,#fcd34d,#fbbf24); border:none; border-radius:9px; padding:10px; cursor:pointer; margin-bottom:10px;">Reconnect file</button>
         </sc-if>
@@ -600,10 +575,16 @@
                     </div>
                   </sc-if>
                   <div style="display:flex; gap:7px; margin-top:9px;">
-                    <button onClick="{{ p.onDone }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#5fd3ff; background:rgba(95,211,255,0.1); border:1px solid rgba(95,211,255,0.36); border-radius:8px; padding:7px; cursor:pointer;">Save</button>
-                    <button onClick="{{ p.onCancel }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#9fb3c8; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.14); border-radius:8px; padding:7px; cursor:pointer;">Cancel</button>
-                    <sc-if value="{{ p.canSetActive }}" hint-placeholder-val="{{ false }}">
-                      <button onClick="{{ p.onToggleActive }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#c2cfde; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.14); border-radius:8px; padding:7px 13px; cursor:pointer;">{{ p.activeBtnLabel }}</button>
+                    <sc-if value="{{ p.isAdding }}" hint-placeholder-val="{{ false }}">
+                      <button onClick="{{ p.onAdd }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#5fd3ff; background:rgba(95,211,255,0.1); border:1px solid rgba(95,211,255,0.36); border-radius:8px; padding:7px; cursor:pointer;">Add</button>
+                      <button onClick="{{ p.onAddCancel }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#9fb3c8; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.14); border-radius:8px; padding:7px; cursor:pointer;">Cancel</button>
+                    </sc-if>
+                    <sc-if value="{{ p.editingExisting }}" hint-placeholder-val="{{ true }}">
+                      <button onClick="{{ p.onDone }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#5fd3ff; background:rgba(95,211,255,0.1); border:1px solid rgba(95,211,255,0.36); border-radius:8px; padding:7px; cursor:pointer;">Save</button>
+                      <button onClick="{{ p.onCancel }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#9fb3c8; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.14); border-radius:8px; padding:7px; cursor:pointer;">Cancel</button>
+                      <sc-if value="{{ p.canSetActive }}" hint-placeholder-val="{{ false }}">
+                        <button onClick="{{ p.onToggleActive }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#c2cfde; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.14); border-radius:8px; padding:7px 13px; cursor:pointer;">{{ p.activeBtnLabel }}</button>
+                      </sc-if>
                     </sc-if>
                   </div>
                   <sc-if value="{{ p.isLastAdmin }}" hint-placeholder-val="{{ false }}">
@@ -1433,7 +1414,7 @@ class Component extends DCLogic {
     // --- storage keys + app version ---
     this.STORE = 'vacation-location:locations:v4'; // localStorage key: the trips array
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
-    this.APP_VERSION = '0.9.3-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '0.9.4-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -3709,9 +3690,13 @@ class Component extends DCLogic {
       const color = palette[s.cfgTravelers.length % palette.length];
       const createdBy = (s.cloudUserEmail || '').toLowerCase().trim();
       const item = { key, label: 'New person', color, email: '', createdBy };
-      return { ...this.persistConfig(s, { cfgTravelers: [...s.cfgTravelers, item] }), editingPersonKey: key };
+      return { ...this.persistConfig(s, { cfgTravelers: [...s.cfgTravelers, item] }), editingPersonKey: key, addingPersonKey: key };
     });
   }
+  // Confirm a freshly-added person (the Add button).
+  addPersonDone() { this._personSnapshot = null; this.setState({ editingPersonKey: null, addingPersonKey: null }); this.toast('User added'); }
+  // Cancel an add → remove the just-created person.
+  addPersonCancel(key) { this.setState({ addingPersonKey: null }); this.personRemove(key); }
   editPerson(key) {
     this.hideStat();
     // Snapshot the editable fields so Cancel can revert (edits otherwise commit live).
@@ -3719,7 +3704,7 @@ class Component extends DCLogic {
     this._personSnapshot = p ? { key, label: p.label, color: p.color, email: p.email || '', createdBy: p.createdBy || '' } : null;
     this.setState({ editingPersonKey: key });
   }
-  donePerson() { this._personSnapshot = null; this.setState({ editingPersonKey: null }); this.toast('User saved'); }
+  donePerson() { this._personSnapshot = null; this.setState({ editingPersonKey: null, addingPersonKey: null }); this.toast('User saved'); }
   cancelPerson() {
     const snap = this._personSnapshot;
     this._personSnapshot = null;
@@ -4532,7 +4517,8 @@ class Component extends DCLogic {
           const active = isUser ? (activeByEmail[email] !== false) : true;
           const used = this.personUsedOnTrip(o.key);
           const mine = !o.createdBy || String(o.createdBy).toLowerCase().trim() === meEmail;
-          const canDelete = !used && (!isCloud || isAdmin || mine);
+          const isAddingThis = o.key === this.state.addingPersonKey;
+          const canDelete = !isAddingThis && !used && (!isCloud || isAdmin || mine);
           let blocked = '';
           if (used) blocked = 'Tagged on one or more trips — remove it from those first.';
           else if (isCloud && !isAdmin && !mine) blocked = 'Added by someone else — only they or an admin can remove it.';
@@ -4549,7 +4535,7 @@ class Component extends DCLogic {
             canSetActive: isCloud && isAdmin && isUser && !this.isLastActiveAdmin(o.email),
             activeBtnLabel: active ? 'Deactivate' : 'Activate',
             onToggleActive: () => this.personSetActive(o.email, !active),
-            canDeleteUser: isCloud && isAdmin && isUser && !this.isLastActiveAdmin(o.email),
+            canDeleteUser: isCloud && isAdmin && isUser && !isAddingThis && !this.isLastActiveAdmin(o.email),
             isLastAdmin: isCloud && isAdmin && isUser && this.isLastActiveAdmin(o.email),
             onDeleteUser: () => this.askUserDelete(o.key),
             online: !!email && onlineEmails.has(email),
@@ -4559,6 +4545,10 @@ class Component extends DCLogic {
             deleteBlockedMsg: blocked,
             onEdit: () => this.editPerson(o.key),
             onHover: (e) => this.showStat(e, o.email),
+            isAdding: o.key === this.state.addingPersonKey,
+            editingExisting: o.key !== this.state.addingPersonKey,
+            onAdd: () => this.addPersonDone(),
+            onAddCancel: () => this.addPersonCancel(o.key),
             onDone: () => this.donePerson(),
             onCancel: () => this.cancelPerson(),
             onLabel: (e) => this.dataItemLabel('traveler', o.key, e.target.value),
