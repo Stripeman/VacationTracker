@@ -749,12 +749,12 @@
               <option value="{{ opt.value }}" style="background:#0a1422; color:#dbe6f2;">{{ opt.label }}</option>
             </sc-for>
           </select>
-          <button onClick="{{ toggleFilters }}" style="flex:none; display:flex; align-items:center; gap:7px; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.06em; color:#bcd2e6; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:9px; padding:8px 11px; cursor:pointer;">
+          <button onClick="{{ toggleFilters }}" style="{{ filtersBtnStyle }}">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
             Filters
             <sc-if value="{{ hasActiveFilters }}" hint-placeholder-val="{{ false }}">
-              <span style="display:inline-flex; align-items:center; justify-content:center; min-width:16px; height:16px; padding:0 4px; border-radius:9px; background:#fbbf24; color:#04111e; font-size:9.5px; font-weight:700;">{{ activeFilterCount }}</span>
+              <span style="display:inline-flex; align-items:center; justify-content:center; min-width:15px; height:15px; padding:0 4px; border-radius:8px; background:#fbbf24; color:#04111e; font-size:9px; font-weight:700;">{{ activeFilterCount }}</span>
             </sc-if>
-            <span style="color:#7fd6f5; font-size:11px;">{{ filtersArrow }}</span>
           </button>
           <sc-if value="{{ filtersOpen }}" hint-placeholder-val="{{ false }}">
             <button onClick="{{ clearFilters }}" title="Clear all filters" style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.04em; color:#f0b4b4; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.28); border-radius:9px; padding:8px 11px; cursor:pointer;">Clear</button>
@@ -987,13 +987,50 @@
               <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:#5d7088; margin-top:4px;">{{ metricsSubtitle }}</div>
             </div>
             <div style="display:flex; align-items:center; gap:8px; flex:none;">
-              <div style="display:flex; gap:4px;">
-                <button onClick="{{ setMetricsAll }}" style="{{ metricsSegAllStyle }}">ALL TRIPS</button>
-                <button onClick="{{ setMetricsFiltered }}" style="{{ metricsSegFilteredStyle }}">FILTERED</button>
-              </div>
+              <button onClick="{{ toggleMetricsFilters }}" title="Filter trips" style="{{ metricsFilterBtnStyle }}">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                Filters
+                <sc-if value="{{ metricsHasFilters }}" hint-placeholder-val="{{ false }}">
+                  <span style="display:inline-flex; align-items:center; justify-content:center; min-width:15px; height:15px; padding:0 4px; border-radius:8px; background:#fbbf24; color:#04111e; font-size:9px; font-weight:700;">{{ metricsFilterCount }}</span>
+                </sc-if>
+              </button>
+              <sc-if value="{{ metricsFiltersOpen }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ clearMetricsFilters }}" title="Clear all filters" style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.06em; color:#f0b4b4; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.28); border-radius:8px; padding:6px 11px; cursor:pointer;">Clear</button>
+              </sc-if>
               <button onClick="{{ closeMetrics }}" style="flex:none; width:28px; height:28px; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#8093aa; cursor:pointer; font-size:15px; line-height:1;">×</button>
             </div>
           </div>
+
+          <sc-if value="{{ metricsFiltersOpen }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-bottom:18px; background:rgba(255,255,255,0.025); border:1px solid rgba(56,189,248,0.16); border-radius:12px; padding:13px 14px;">
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:11px;">
+                <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.2em; color:#5d7088;">FILTER TRIPS</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:11px;">
+                <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#586a82; flex:none; width:54px;">YEAR</span>
+                <select value="{{ metricsYearValue }}" onChange="{{ onMetricsYear }}" style="flex:1; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.14); border-radius:8px; padding:6px 9px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
+                  <option value="all" style="background:#0a1422;">All years</option>
+                  <sc-for list="{{ metricsYears }}" as="y" hint-placeholder-count="3"><option value="{{ y.value }}" style="background:#0a1422;">{{ y.label }}</option></sc-for>
+                </select>
+              </div>
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#586a82; margin-bottom:6px;">STATUS</div>
+              <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:11px;">
+                <sc-for list="{{ metricsStatusChips }}" as="c" hint-placeholder-count="3"><button onClick="{{ c.onToggle }}" style="{{ c.style }}">{{ c.label }}</button></sc-for>
+              </div>
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#586a82; margin-bottom:6px;">VISIT TYPE</div>
+              <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:11px;">
+                <sc-for list="{{ metricsVisitChips }}" as="c" hint-placeholder-count="4"><button onClick="{{ c.onToggle }}" style="{{ c.style }}">{{ c.label }}</button></sc-for>
+              </div>
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#586a82; margin-bottom:6px;">TRIP TYPE</div>
+              <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:11px;">
+                <sc-for list="{{ metricsTripChips }}" as="c" hint-placeholder-count="2"><button onClick="{{ c.onToggle }}" style="{{ c.style }}">{{ c.label }}</button></sc-for>
+              </div>
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#586a82; margin-bottom:6px;">TRAVELER</div>
+              <div style="display:flex; flex-wrap:wrap; gap:6px;">
+                <sc-for list="{{ metricsTravelerChips }}" as="c" hint-placeholder-count="3"><button onClick="{{ c.onToggle }}" style="{{ c.style }}">{{ c.label }}</button></sc-for>
+              </div>
+            </div>
+          </sc-if>
 
           <sc-if value="{{ metrics.isEmpty }}" hint-placeholder-val="{{ false }}">
             <div style="padding:30px 10px; text-align:center; font-family:'Space Grotesk',sans-serif; font-size:14px; color:#73849c;">No trips yet — add some destinations and your stats will appear here.</div>
@@ -1610,7 +1647,8 @@ class Component extends DCLogic {
       filtersOpen: false,
       heatOpen: false,
       metricsOpen: false,
-      metricsScope: 'all',
+      metricsFiltersOpen: false,
+      metricsFilter: { year: 'all', statuses: [], visit: [], trip: [], travelers: [] },
       toastMsg: '',
       bulk: { fields: { owner: false, notes: false, visit: false, travelers: false, trip: false, vis: false }, owner: '', notes: '', visit: [], travelers: [], trip: [], vis: 'private', shareKeys: [] },
       bulkConfirm: false,
@@ -3290,9 +3328,9 @@ class Component extends DCLogic {
   }
   toggleDup() { this.setState(s => ({ dupMode: !s.dupMode })); }
   // Build a full statistics snapshot over ALL trips (unfiltered) for the metrics panel.
-  computeMetrics(scope) {
+  computeMetrics() {
     const all = this.state.locations || [];
-    const locs = scope === 'filtered' ? all.filter(l => this.passesFilter(l)) : all;
+    const locs = all.filter(l => this.metricsPassesFilter(l));
     const total = locs.length;
     const todayISO = new Date().toISOString().slice(0, 10);
     const dayCount = (l) => {
@@ -3379,7 +3417,31 @@ class Component extends DCLogic {
   }
   toggleMetrics() { this.setState(s => ({ metricsOpen: !s.metricsOpen })); }
   closeMetrics() { this.setState({ metricsOpen: false }); }
-  setMetricsScope(scope) { this.setState({ metricsScope: scope }); }
+  toggleMetricsFilters() { this.setState(s => ({ metricsFiltersOpen: !s.metricsFiltersOpen })); }
+  // Metrics dashboard has its OWN filter set (independent of the left search filters).
+  // Empty = all trips in the system. Mirrors the same dimensions you filter trips by.
+  metricsPassesFilter(l) {
+    const f = this.state.metricsFilter || {};
+    if (f.year && f.year !== 'all') { if ((l.date || '').slice(0, 4) !== String(f.year)) return false; }
+    if (f.statuses && f.statuses.length && !f.statuses.includes(l.status)) return false;
+    if (f.visit && f.visit.length && !(l.visitTypes || []).some(k => f.visit.includes(k))) return false;
+    if (f.trip && f.trip.length && !(l.tripTypes || []).some(k => f.trip.includes(k))) return false;
+    if (f.travelers && f.travelers.length && !(l.travelers || []).some(k => f.travelers.includes(k))) return false;
+    return true;
+  }
+  metricsFilterCount() {
+    const f = this.state.metricsFilter || {};
+    return (f.year && f.year !== 'all' ? 1 : 0) + (f.statuses || []).length + (f.visit || []).length + (f.trip || []).length + (f.travelers || []).length;
+  }
+  setMetricsYear(y) { this.setState(s => ({ metricsFilter: { ...s.metricsFilter, year: y } })); }
+  toggleMetricsArr(field, key) {
+    this.setState(s => {
+      const cur = (s.metricsFilter && s.metricsFilter[field]) || [];
+      const next = cur.includes(key) ? cur.filter(k => k !== key) : [...cur, key];
+      return { metricsFilter: { ...s.metricsFilter, [field]: next } };
+    });
+  }
+  clearMetricsFilters() { this.setState({ metricsFilter: { year: 'all', statuses: [], visit: [], trip: [], travelers: [] } }); }
   // Inconspicuous auto-dismissing toast for save/edit/delete feedback across the app.
   toast(msg) {
     if (this._toastTimer) clearTimeout(this._toastTimer);
@@ -4310,6 +4372,7 @@ class Component extends DCLogic {
       travelerFilterChips,
       activeFilterCount,
       hasActiveFilters: activeFilterCount > 0,
+      filtersBtnStyle: 'flex:none; display:flex; align-items:center; gap:6px; font-family:\'IBM Plex Mono\',monospace; font-size:10px; letter-spacing:0.08em; border-radius:8px; padding:6px 11px; cursor:pointer; ' + (this.state.filtersOpen ? 'color:#fbd87a; background:rgba(251,191,36,0.12); border:1px solid rgba(251,191,36,0.5);' : 'color:#bcd2e6; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.28);'),
       filtersOpen: this.state.filtersOpen,
       filtersArrow: this.state.filtersOpen ? '▾' : '▸',
       toggleFilters: () => this.toggleFilters(),
@@ -4325,14 +4388,20 @@ class Component extends DCLogic {
       hasToast: !!this.state.toastMsg,
       stop: (e) => { if (e && e.stopPropagation) e.stopPropagation(); },
       metrics: this.state.metricsOpen ? this.computeMetrics(this.state.metricsScope) : { isEmpty: true, tiles: [], byStatus: [], byVisit: [], byTrip: [], byTraveler: [], daysByTraveler: [], topCountries: [], topCities: [], byYear: [] },
-      metricsScope: this.state.metricsScope,
-      metricsScopeAll: this.state.metricsScope !== 'filtered',
-      metricsScopeFiltered: this.state.metricsScope === 'filtered',
-      setMetricsAll: () => this.setMetricsScope('all'),
-      setMetricsFiltered: () => this.setMetricsScope('filtered'),
-      metricsSubtitle: this.state.metricsScope === 'filtered' ? (activeFilterCount > 0 ? ('FILTERED · ' + activeFilterCount + ' filter' + (activeFilterCount === 1 ? '' : 's') + ' active') : 'FILTERED · NO FILTERS SET') : 'EVERY TRIP · ALL TIME',
-      metricsSegAllStyle: 'font-family:\'IBM Plex Mono\',monospace; font-size:9px; letter-spacing:0.12em; padding:5px 11px; border-radius:7px; cursor:pointer; border:1px solid ' + (this.state.metricsScope !== 'filtered' ? 'rgba(56,189,248,0.5); background:rgba(56,189,248,0.16); color:#bfe9ff;' : 'rgba(255,255,255,0.1); background:transparent; color:#7c8ea6;'),
-      metricsSegFilteredStyle: 'font-family:\'IBM Plex Mono\',monospace; font-size:9px; letter-spacing:0.12em; padding:5px 11px; border-radius:7px; cursor:pointer; border:1px solid ' + (this.state.metricsScope === 'filtered' ? 'rgba(56,189,248,0.5); background:rgba(56,189,248,0.16); color:#bfe9ff;' : 'rgba(255,255,255,0.1); background:transparent; color:#7c8ea6;'),
+      metricsFiltersOpen: this.state.metricsFiltersOpen,
+      toggleMetricsFilters: () => this.toggleMetricsFilters(),
+      metricsFilterCount: this.metricsFilterCount(),
+      metricsHasFilters: this.metricsFilterCount() > 0,
+      clearMetricsFilters: () => this.clearMetricsFilters(),
+      metricsFilterBtnStyle: 'display:flex; align-items:center; gap:6px; font-family:\'IBM Plex Mono\',monospace; font-size:10px; letter-spacing:0.08em; border-radius:8px; padding:6px 11px; cursor:pointer; ' + (this.state.metricsFiltersOpen ? 'color:#fbd87a; background:rgba(251,191,36,0.12); border:1px solid rgba(251,191,36,0.5);' : 'color:#bcd2e6; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.28);'),
+      metricsSubtitle: this.metricsFilterCount() > 0 ? (this.metricsFilterCount() + ' filter' + (this.metricsFilterCount() === 1 ? '' : 's') + ' active') : 'EVERY TRIP · ALL TIME',
+      metricsYearValue: String((this.state.metricsFilter && this.state.metricsFilter.year) || 'all'),
+      onMetricsYear: (e) => this.setMetricsYear(e.target.value),
+      metricsYears: [...new Set((this.state.locations || []).map(l => (l.date || '').slice(0, 4)).filter(Boolean))].sort((a, b) => b.localeCompare(a)).map(y => ({ value: y, label: y })),
+      metricsStatusChips: (this.state.cfgStatuses || []).map(o => ({ key: o.key, label: o.label, style: filterChip(o.color, ((this.state.metricsFilter || {}).statuses || []).includes(o.key)), onToggle: () => this.toggleMetricsArr('statuses', o.key) })),
+      metricsVisitChips: (this.state.cfgVisitTypes || []).map(o => ({ key: o.key, label: o.label, style: filterChip(o.color, ((this.state.metricsFilter || {}).visit || []).includes(o.key)), onToggle: () => this.toggleMetricsArr('visit', o.key) })),
+      metricsTripChips: (this.state.cfgTripTypes || []).map(o => ({ key: o.key, label: o.label, style: filterChip(o.color, ((this.state.metricsFilter || {}).trip || []).includes(o.key)), onToggle: () => this.toggleMetricsArr('trip', o.key) })),
+      metricsTravelerChips: (this.state.cfgTravelers || []).map(o => ({ key: o.key, label: o.label, style: filterChip(o.color, ((this.state.metricsFilter || {}).travelers || []).includes(o.key)), onToggle: () => this.toggleMetricsArr('travelers', o.key) })),
       heatTiles,
       heatHasData: heatTiles.length > 0,
       heatEmpty: heatTiles.length === 0,
